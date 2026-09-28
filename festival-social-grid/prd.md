@@ -1,175 +1,138 @@
-# PRD-001: Festival Social Grid — grillas personales y grupales para festivales de música
+# PRD-001: Festival Social Grid — MVP de grillas personales y grupales
 
-## Contexto y Problema
+## Resumen del producto
 
-Quienes asisten a un festival reciben un line-up extenso, distribuido entre días, horarios y escenarios. Decidir qué artistas ver, detectar superposiciones y coordinar el recorrido con amigos suele requerir capturas de pantalla, mensajes dispersos y planillas que quedan desactualizadas.
+Festival Social Grid es un MVP autenticado para consultar el line-up de un único festival de música de Argentina, planificar una agenda personal y coordinar coincidencias con grupos privados. Cada despliegue representa exactamente un festival: sus metadatos se configuran por desarrollo y su programación se incorpora mediante un importador o *seed* CSV versionado ejecutado por desarrollo. Ese aprovisionamiento es operativo y no forma parte de la experiencia de usuarios.
 
-El MVP centraliza la programación oficial de distintos festivales y permite que cada persona elija uno y arme una grilla independiente. Los usuarios pueden reunirse en grupos privados asociados a un festival para consultar automáticamente qué integrantes eligieron cada artista, reconocer coincidencias y tomar decisiones fuera de la plataforma sin perder la preferencia individual de cada miembro. Durante cada festival, la grilla identifica qué shows están en vivo según la hora actual. Además, cada usuario puede descargar como imagen su grilla personal o una versión grupal para usarla como fondo de pantalla o compartirla.
+Tras iniciar sesión, cada persona puede explorar shows, seleccionar cuáles ver, advertir superposiciones, ver su estado temporal y comparar automáticamente las selecciones con amistades. Las grillas personales y grupales se pueden exportar en PNG para compartir o usar como fondo de pantalla.
 
-**Personas principales**
+## Contexto y problema
 
-- **Asistente:** explora el line-up, consulta información de los shows, arma su grilla personal y la descarga como imagen.
-- **Integrante de un grupo:** compara su selección con la de sus amigos, busca coincidencias y exporta una grilla grupal.
-- **Desarrollador administrador:** accede mediante una cuenta administrativa separada, crea festivales, carga o extrae programaciones, revisa borradores y publica actualizaciones.
+Un line-up extenso, con días, horarios y escenarios simultáneos, obliga a asistentes a alternar entre capturas, mensajes y planillas. Esto dificulta descubrir artistas, mantener una agenda propia consistente y reconocer qué shows interesan al grupo.
 
-**Decisiones del MVP**
+El MVP concentra esos flujos en una sola aplicación autenticada. No intenta operar festivales ni administrar contenidos desde una interfaz: asume que el equipo de desarrollo ya aprovisionó datos oficiales y vigentes para el festival del despliegue.
 
-- Se ofrece un catálogo con varios festivales publicados en fechas diferentes.
-- Cada grilla personal y cada grupo pertenecen a un único festival.
-- El panel administrativo es exclusivo del desarrollador y utiliza una cuenta separada del acceso de usuarios.
-- La programación puede cargarse manualmente por día, importarse por CSV o extraerse parcialmente desde una imagen.
-- Toda extracción desde imagen queda como borrador revisable; ningún dato extraído se publica automáticamente.
-- La publicación se realiza por festival completo.
-- Un festival publicado puede editarse: los cambios se preparan como borrador y reemplazan la versión visible únicamente al volver a publicar.
-- El acceso se realiza con Google o mediante un código nuevo, temporal y de un solo uso enviado por email.
-- Cada usuario tiene un nombre de usuario único, buscable y modificable.
-- La selección personal es binaria: el usuario quiere asistir o no seleccionó al artista.
-- La vista grupal se calcula automáticamente; no existe una grilla grupal editable ni una votación formal.
-- Durante el festival, la aplicación muestra estados horarios dentro de la grilla, sin enviar notificaciones del navegador.
-- La grilla personal se descarga en dos formatos PNG predefinidos: fondo vertical para celular e imagen estándar para compartir.
-- Al exportar una grilla grupal, el usuario decide si muestra las cantidades de coincidencias o también los nombres de los integrantes.
-- Todo el contenido requiere autenticación. No existen perfiles, grillas ni enlaces públicos.
+## Personas
+
+- **Asistente:** inicia sesión, consulta el line-up, revisa el detalle de un show, arma su grilla y la exporta.
+- **Integrante de grupo:** comparte un grupo privado, consulta coincidencias de selección y exporta una vista grupal.
+- **Propietario de grupo:** crea un grupo privado, invita usuarios y administra sus miembros dentro del límite establecido.
+- **Desarrollador de despliegue:** configura los metadatos del único festival e importa o siembra el line-up versionado; no es una persona usuaria del producto ni dispone de un panel.
+
+## Decisiones de producto
+
+| Tema | Decisión |
+|---|---|
+| Festival | Cada despliegue contiene exactamente un festival ubicado en Argentina. No hay catálogo ni selector de festivales. |
+| Datos del festival | Desarrollo provee los metadatos por configuración y carga el line-up con un proceso CSV a base de datos versionado, ejecutado por desarrollo. |
+| Aprovisionamiento | La configuración y el importador o *seed* son operaciones técnicas; no existe carga, edición ni publicación de datos desde la interfaz. |
+| Identidad | Todo el contenido requiere autenticación. Google o un código de email temporal permiten el acceso; el perfil completo es privado de su propietario. El descubrimiento para invitaciones expone solo nombre de usuario y avatar. |
+| Selección | La selección personal es binaria: un usuario selecciona un show o no lo selecciona. |
+| Grupos | Los grupos son privados y admiten como máximo 15 miembros en total, incluido su propietario. |
+| Coincidencia | Una coincidencia grupal existe solo cuando al menos dos miembros seleccionaron el mismo show. |
+| Tiempo | El servidor entrega el instante UTC autoritativo; la aplicación lo convierte y compara con la zona IANA fija `America/Argentina/Buenos_Aires`. No usa la hora del dispositivo ni la zona horaria local del servidor. |
+| Exportación | Se mantienen exportaciones PNG personales y grupales en dos formatos fijos. La exportación grupal parte de los shows seleccionados por quien la solicita, incorpora los conteos del grupo y puede incluir nombres de usuario. |
 
 ## Objetivos
 
-- Permitir que un usuario autenticado encuentre un artista y lo agregue a su grilla en menos de 60 segundos desde que ingresa al festival.
-- Lograr que al menos el 70% de los usuarios que seleccionen un artista completen una grilla con tres o más shows.
-- Permitir que un grupo identifique, sin coordinación manual externa, cuántos miembros quieren asistir a cada show y quiénes son.
-- Detectar todas las superposiciones horarias presentes en la grilla personal según los horarios oficiales publicados.
-- Mostrar correctamente qué shows seleccionados están en vivo durante el festival según la hora actual y la zona horaria oficial.
-- Permitir descargar una representación legible de la grilla personal o grupal en menos de 30 segundos.
-- Mantener una versión publicada y consistente de cada festival, administrada mediante carga manual, CSV o extracción revisada desde una imagen.
-- Permitir que el desarrollador cree, complete, publique y actualice festivales sin modificar directamente la base de datos.
+- Permitir que una persona autenticada encuentre shows del line-up y construya una agenda personal ordenada.
+- Hacer visibles las superposiciones entre shows seleccionados sin impedir la elección de la persona.
+- Permitir que los miembros de un grupo privado identifiquen de forma automática los shows elegidos por al menos dos integrantes.
+- Mostrar estados temporales correctos para los shows de una agenda abierta usando una referencia horaria autoritativa.
+- Permitir compartir una representación legible de la grilla personal o grupal mediante PNG.
 
-## Requerimientos Funcionales
+## Requerimientos funcionales
 
-- **RF-01 — Autenticación:** El sistema debe permitir que una persona cree una cuenta, inicie sesión y cierre sesión mediante Google o mediante un código de seis dígitos enviado por email.
-- **RF-02 — Código por email:** El sistema debe generar un código nuevo, temporal y de un solo uso en cada intento de acceso por email; si el email no está registrado, la primera verificación válida debe crear la cuenta.
-- **RF-03 — Perfil:** El sistema debe solicitar un nombre de usuario único al completar el primer acceso y permitir que cada usuario consulte y edite posteriormente su nombre de usuario y avatar.
-- **RF-04 — Nombre de usuario:** El sistema debe exigir que el nombre de usuario sea único, permitir buscar usuarios por ese nombre y validar su disponibilidad antes de guardar un cambio.
-- **RF-05 — Acceso administrativo:** El sistema debe ofrecer un acceso administrativo separado del acceso de usuarios y permitir ingresar únicamente a la cuenta administrativa provisionada para el desarrollador.
-- **RF-06 — Gestión de festivales:** El sistema debe permitir que el administrador cree y edite festivales con nombre, descripción, imagen, ubicación, fecha inicial, fecha final y zona horaria.
-- **RF-07 — Exploración del line-up:** El sistema debe mostrar la programación publicada del festival elegido y permitir buscar por artista y filtrar por día y escenario.
-- **RF-08 — Información del show:** El sistema debe mostrar para cada show el artista, su descripción, el día, el escenario y las horas de inicio y finalización.
-- **RF-09 — Grilla personal:** El sistema debe permitir que un usuario agregue o quite shows de su grilla personal desde el line-up o desde el detalle del show.
-- **RF-10 — Orden de la grilla:** El sistema debe ordenar la grilla personal cronológicamente y agruparla por día.
-- **RF-11 — Conflictos horarios:** El sistema debe advertir cuando dos o más shows seleccionados se superponen, sin impedir que el usuario conserve ambas selecciones.
-- **RF-12 — Creación de grupos:** El sistema debe permitir que un usuario cree, dentro del festival elegido, un grupo privado con nombre y se convierta en su propietario.
-- **RF-13 — Invitaciones:** El sistema debe permitir que el propietario invite a usuarios registrados mediante email o nombre de usuario y que cada invitado acepte o rechace la invitación.
-- **RF-14 — Gestión de miembros:** El sistema debe permitir que un miembro abandone un grupo y que el propietario elimine miembros o transfiera la propiedad antes de abandonarlo.
-- **RF-15 — Coincidencias grupales:** El sistema debe calcular y mostrar, para cada show, cuántos miembros del grupo lo seleccionaron y sus nombres de usuario.
-- **RF-16 — Vista grupal:** El sistema debe permitir ordenar la programación grupal por horario o cantidad de interesados y filtrar los shows sin coincidencias.
-- **RF-17 — Actualización grupal:** El sistema debe reflejar en la vista grupal los cambios realizados en las grillas personales de sus miembros.
-- **RF-18 — Estado temporal:** El sistema debe clasificar cada show seleccionado como “próximo”, “en vivo” o “finalizado” comparando la hora actual del dispositivo, convertida a la zona horaria oficial del festival, con sus horas de inicio y finalización.
-- **RF-19 — Actualización temporal:** El sistema debe actualizar automáticamente los estados temporales mientras la grilla permanezca abierta.
-- **RF-20 — Exportación personal:** El sistema debe generar una imagen PNG que contenga únicamente los shows seleccionados por el usuario, agrupados por día y ordenados cronológicamente.
-- **RF-21 — Formatos personales:** El sistema debe ofrecer la exportación personal en formato vertical para fondo de celular de 1080 × 1920 px y en formato estándar para compartir de 1080 × 1350 px.
-- **RF-22 — Exportación grupal:** El sistema debe generar, a partir de los shows seleccionados por el usuario, una imagen PNG que incluya la cantidad de miembros del grupo coincidentes por show.
-- **RF-23 — Identidad en exportación:** El sistema debe permitir que el usuario decida, en cada exportación grupal, si la imagen incluye también los nombres de usuario de los miembros coincidentes.
-- **RF-24 — Privacidad:** El sistema debe restringir perfiles, grillas, grupos e invitaciones a usuarios autenticados y autorizados, y debe impedir que una cuenta de usuario acceda al panel administrativo.
-- **RF-25 — Catálogo de festivales:** El sistema debe mostrar a los usuarios todos los festivales publicados y permitir elegir uno para consultar su programación.
-- **RF-26 — Alcance por festival:** El sistema debe mantener separadas las grillas personales, los grupos, las invitaciones y las coincidencias de cada festival.
-- **RF-27 — Carga manual por día:** El sistema debe permitir que el administrador agregue un día al borrador de un festival y complete sus escenarios, horarios y artistas manualmente.
-- **RF-28 — Importación CSV:** El sistema debe permitir que el administrador importe al borrador un CSV con artistas, descripción, día, escenario, hora de inicio y hora de finalización.
-- **RF-29 — Extracción desde imagen:** El sistema debe permitir que el administrador cargue una imagen de la programación de un día para extraer parcialmente artistas, escenarios y horarios mediante OCR o IA.
-- **RF-30 — Revisión de extracción:** El sistema debe guardar el resultado de la extracción como borrador, asociarlo al día elegido, señalar campos faltantes o inciertos y permitir corregir, completar o descartar cada fila antes de validarla.
-- **RF-31 — Publicación completa:** El sistema debe validar el borrador completo y requerir confirmación administrativa antes de publicar o reemplazar de manera atómica la programación visible de un festival.
-- **RF-32 — Edición posterior:** El sistema debe permitir editar un festival publicado mediante un nuevo borrador basado en su versión vigente, sin alterar la versión visible hasta que el administrador vuelva a publicarlo.
+- **RF-01 — Festival aprovisionado:** El despliegue debe exponer exactamente un festival de Argentina. Sus metadatos deben provenir de configuración de desarrollo y su line-up de un importador o *seed* CSV a base de datos, versionado y ejecutado por desarrollo.
+- **RF-02 — Autenticación:** El sistema debe permitir iniciar sesión mediante Google o mediante un código de seis dígitos nuevo, temporal y de un solo uso enviado por email, y debe permitir cerrar sesión. Si el email no está registrado, su primera verificación válida debe crear la cuenta.
+- **RF-03 — Perfil y descubrimiento de usuarios:** Al completar el primer acceso, el sistema debe solicitar un nombre de usuario único de entre 3 y 30 caracteres. Cada persona debe poder leer y modificar únicamente su perfil completo, incluidos su nombre de usuario y avatar; la unicidad del nombre debe evaluarse sin distinguir mayúsculas de minúsculas. Los usuarios autenticados deben poder buscar usuarios registrados por nombre de usuario para cursar invitaciones; esa búsqueda solo expone nombre de usuario y avatar, no el perfil completo de otra persona.
+- **RF-04 — Exploración del line-up:** El sistema debe mostrar a personas autenticadas el line-up del festival aprovisionado y permitir buscar por artista y filtrar por día y escenario.
+- **RF-05 — Detalle del show:** El sistema debe mostrar a personas autenticadas, para cada show, su artista, descripción, día, escenario y horas de inicio y finalización.
+- **RF-06 — Selección personal:** El sistema debe permitir que una persona autenticada agregue o quite shows de su grilla personal desde el line-up o el detalle del show.
+- **RF-07 — Orden de la grilla personal:** El sistema debe agrupar los shows seleccionados por día y ordenarlos cronológicamente por hora de inicio.
+- **RF-08 — Advertencias de superposición:** El sistema debe advertir los intervalos superpuestos entre dos o más shows seleccionados sin impedir que la persona conserve las selecciones.
+- **RF-09 — Creación de grupos:** El sistema debe permitir que una persona autenticada cree un grupo privado con nombre y se convierta en su propietario y miembro. Un grupo no puede superar los 15 miembros en total, incluido el propietario.
+- **RF-10 — Invitaciones:** El propietario debe poder invitar a un usuario registrado por email o nombre de usuario; la persona invitada debe poder aceptar o rechazar la invitación.
+- **RF-11 — Gestión de miembros:** Un miembro debe poder abandonar un grupo. El propietario debe poder eliminar miembros o transferir la propiedad antes de abandonarlo, respetando siempre el límite de 15 miembros.
+- **RF-12 — Coincidencias automáticas:** Para cada show, el sistema debe calcular para los miembros del grupo la cantidad de selecciones y los nombres de usuario de quienes lo seleccionaron. Un show es una coincidencia grupal solo si fue seleccionado por al menos dos miembros.
+- **RF-13 — Vista y filtro de coincidencias:** La vista grupal debe permitir ordenar por horario o por cantidad de personas interesadas. Al activar el filtro de coincidencias, debe ocultar todo show seleccionado por menos de dos miembros.
+- **RF-14 — Actualización de la vista grupal:** Al consultar o actualizar la vista grupal, sus conteos y nombres deben reflejar las selecciones personales vigentes de los miembros autorizados.
+- **RF-15 — Estado temporal:** Para cada show seleccionado, el sistema debe mostrar “próximo” cuando el instante actual es anterior al inicio, “en vivo” cuando es mayor o igual al inicio y estrictamente anterior al final, o “finalizado” cuando es mayor o igual al final. La comparación debe usar el instante UTC autoritativo entregado por el servidor, convertido a `America/Argentina/Buenos_Aires`.
+- **RF-16 — Actualización temporal abierta:** Mientras una grilla permanezca abierta, el sistema debe actualizar los estados temporales sin requerir recarga manual dentro de los 60 segundos posteriores a cada límite de inicio o finalización.
+- **RF-17 — Exportación personal:** El sistema debe generar una imagen PNG de la grilla personal con solo los shows seleccionados, agrupados por día y ordenados cronológicamente.
+- **RF-18 — Exportación grupal:** El sistema debe generar, a partir de los shows seleccionados por la persona solicitante, una imagen PNG que agregue para cada show el conteo de miembros del grupo que también lo seleccionaron y una opción explícita para incluir sus nombres de usuario.
+- **RF-19 — Formatos de exportación:** Las exportaciones personal y grupal deben ofrecer los formatos PNG de 1080 × 1920 px y 1080 × 1350 px.
+- **RF-20 — Autorización y privacidad:** Todo el contenido, incluidos el line-up y el detalle de shows, requiere autenticación. El sistema debe proteger las grillas personales, grupos, invitaciones y exportaciones para que solo usuarios autorizados accedan a esos recursos.
 
-## Requerimientos No Funcionales
+## Requerimientos no funcionales
 
-- **RNF-01 — Rendimiento:** El 95% de las consultas del line-up, la grilla personal y la vista grupal debe responder en menos de 2 segundos con hasta 10.000 usuarios registrados y 200 miembros por grupo.
-- **RNF-02 — Actualización grupal:** Los cambios de una grilla personal deben verse reflejados en la vista grupal en menos de 5 segundos p95.
-- **RNF-03 — Disponibilidad:** La aplicación debe alcanzar una disponibilidad mensual mínima del 99,5%, excluyendo mantenimientos anunciados.
-- **RNF-04 — Seguridad de acceso:** Toda comunicación debe utilizar TLS 1.2 o superior. Cada código de acceso debe vencer a los 10 minutos, ser invalidado tras su primer uso exitoso y admitir como máximo cinco intentos fallidos.
-- **RNF-05 — Prevención de abuso:** El sistema debe permitir como máximo cinco solicitudes de código por email cada 15 minutos y no debe revelar si una dirección ya está registrada.
-- **RNF-06 — Autorización:** El 100% de los endpoints que exponen perfiles, grillas, grupos o exportaciones debe validar autenticación y pertenencia o invitación aplicable del usuario.
-- **RNF-07 — Identidad:** Los nombres de usuario deben tener entre 3 y 30 caracteres y su unicidad debe evaluarse sin distinguir mayúsculas de minúsculas.
-- **RNF-08 — Accesibilidad:** Los flujos principales deben cumplir WCAG 2.1 nivel AA y poder operarse mediante teclado.
-- **RNF-09 — Compatibilidad:** La interfaz debe ser responsive entre 360 px y 1.440 px y soportar las dos versiones estables más recientes de Chrome, Safari, Firefox y Edge.
-- **RNF-10 — Integridad de importación:** Una importación con filas inválidas no debe modificar la programación publicada y debe informar el 100% de las filas rechazadas con su causa.
-- **RNF-11 — Actualización temporal:** Mientras la grilla esté abierta, los estados “próximo”, “en vivo” y “finalizado” deben actualizarse dentro de los 60 segundos posteriores a un cambio de estado horario.
-- **RNF-12 — Generación de imágenes:** El 95% de las exportaciones debe producir un PNG descargable en menos de 5 segundos y respetar exactamente las dimensiones elegidas.
-- **RNF-13 — Privacidad de exportación:** Las imágenes generadas no deben quedar accesibles mediante una URL pública y deben contener nombres de otros miembros únicamente cuando el usuario elija esa opción.
-- **RNF-14 — Observabilidad:** Los accesos y cambios administrativos, junto con los errores de autenticación, importación, extracción, exportación y autorización, deben generar eventos auditables con fecha, operación y actor, sin registrar credenciales, códigos, tokens ni datos sensibles de sesión.
-- **RNF-15 — Aislamiento administrativo:** El 100% de las rutas y operaciones administrativas debe rechazar cuentas de usuario normales, incluso si conocen la URL del panel.
-- **RNF-16 — Integridad de borradores:** Ninguna carga manual, importación CSV, extracción desde imagen o edición posterior debe modificar una versión publicada antes de una confirmación explícita de publicación.
-- **RNF-17 — Publicación atómica:** Una publicación debe dejar visible la nueva versión completa del festival o conservar íntegramente la versión anterior; nunca debe exponer una mezcla parcial de ambas.
-- **RNF-18 — Imágenes de origen:** La extracción debe aceptar archivos JPEG o PNG de hasta 15 MB, conservar la imagen vinculada al borrador y marcar como no verificado todo dato propuesto automáticamente.
+- **RNF-01 — Rendimiento de consultas:** La referencia es un ejecutor Linux de CI con 2 vCPU y 4 GB de RAM, con la aplicación y la base de datos de prueba en el mismo ejecutor. El *fixture* contiene exactamente 150 shows y un grupo de exactamente 15 miembros, con 30 shows seleccionados por miembro. Después de 30 solicitudes de calentamiento por cada operación medida, se ejecutan 300 solicitudes medidas: exactamente 100 de line-up, 100 de grilla personal y 100 de vista grupal, impulsadas por exactamente 10 usuarios autenticados concurrentes. En la frontera de la API, el p95 se calcula por separado para cada operación y cada uno debe ser inferior a 2 segundos.
+- **RNF-02 — Actualización temporal:** Con una grilla abierta, la transición de estado temporal de cada show debe ser visible dentro de los 60 segundos posteriores a su límite horario, usando el instante UTC autoritativo del servidor y `America/Argentina/Buenos_Aires`.
+- **RNF-03 — Generación de PNG:** En el mismo ejecutor Linux de CI con 2 vCPU y 4 GB de RAM, con la aplicación y la base de datos de prueba en el mismo ejecutor, se usa el *fixture* de RNF-01. La persona solicitante tiene exactamente 30 shows seleccionados en 3 días del festival. Después de 5 exportaciones de calentamiento para cada combinación de personal o grupal y 1080 × 1920 px o 1080 × 1350 px, se ejecutan 100 exportaciones medidas: exactamente 25 por cada una de las cuatro combinaciones, impulsadas por exactamente 2 usuarios autenticados concurrentes. En la frontera de la API, el p95 del conjunto de exportaciones medidas debe ser inferior a 5 segundos y cada PNG debe tener exactamente las dimensiones seleccionadas.
+- **RNF-04 — Privacidad verificable:** Las pruebas automatizadas deben comprobar que una persona no autenticada no puede acceder a contenido alguno y que una persona ajena a un grupo o destinataria de otra invitación no puede leer, modificar ni exportar recursos privados que no le corresponden; las exportaciones no deben publicarse mediante URL accesibles sin autorización.
+- **RNF-05 — Integridad del aprovisionamiento:** El proceso CSV versionado debe validar los campos requeridos de cada show antes de cargarlo y rechazar datos inválidos sin dejar un line-up parcialmente aprovisionado.
+- **RNF-06 — Seguridad de acceso:** Toda comunicación debe usar TLS 1.2 o superior. Cada código de email debe vencer después de 10 minutos, quedar inválido tras su primer uso exitoso y permitir como máximo cinco intentos fallidos de verificación.
+- **RNF-07 — Prevención de abuso y enumeración:** El sistema debe permitir como máximo cinco solicitudes de código por email en 15 minutos. Las solicitudes y sus respuestas no deben revelar si un email está registrado.
 
-## Criterios de Aceptación
+## Criterios de aceptación y trazabilidad
 
-- **AC-01 (RF-01):** Dada una persona con una cuenta de Google válida, cuando autoriza el acceso, entonces el sistema crea o recupera su cuenta y le permite ingresar al contenido privado.
-- **AC-02 (RF-01, RF-02):** Dado un email no registrado, cuando la persona solicita un código e ingresa correctamente los seis dígitos vigentes, entonces el sistema crea su cuenta e inicia la sesión.
-- **AC-03 (RF-02):** Dado un email registrado, cuando su titular solicita volver a ingresar, entonces recibe un código distinto al anterior; tras usarlo correctamente una vez, ese código no puede reutilizarse.
-- **AC-04 (RF-02):** Dado un código vencido, incorrecto o con cinco intentos fallidos, cuando una persona intenta validarlo, entonces el acceso es rechazado sin indicar si el email está registrado.
-- **AC-05 (RF-03):** Dada una persona que completa su primer acceso, cuando elige un nombre de usuario disponible, entonces puede ingresar a la aplicación; una vez dentro, puede cambiar ese nombre o su avatar y el nuevo perfil aparece en su cuenta y en sus grupos.
-- **AC-06 (RF-04):** Dado un nombre de usuario ya ocupado con cualquier combinación de mayúsculas y minúsculas, cuando otro usuario intenta guardarlo, entonces el sistema rechaza el cambio; si está disponible, permite guardarlo y encontrarlo mediante búsqueda.
-- **AC-07 (RF-05):** Dada la cuenta administrativa provisionada, cuando presenta sus credenciales válidas en el acceso administrativo, entonces puede ingresar al panel; una cuenta de usuario normal es rechazada aunque tenga una sesión válida.
-- **AC-08 (RF-06):** Dado el panel administrativo, cuando el administrador crea un festival con todos los datos requeridos, entonces se guarda como borrador y todavía no aparece en el catálogo disponible para los usuarios autenticados.
-- **AC-09 (RF-06):** Dado un festival existente, cuando el administrador modifica sus datos generales, entonces los cambios quedan asociados a su borrador y respetan el rango de fechas y la zona horaria configurados.
-- **AC-10 (RF-07):** Dada una programación publicada, cuando un usuario busca un artista o combina filtros de día y escenario, entonces solo aparecen los shows que cumplen todos los criterios activos.
-- **AC-11 (RF-08):** Dado un show publicado, cuando un usuario abre su detalle, entonces ve artista, descripción, día, escenario, inicio y finalización.
-- **AC-12 (RF-09):** Dado un show no seleccionado, cuando el usuario lo agrega, entonces aparece en su grilla; cuando lo quita, deja de aparecer sin afectar las grillas de otros usuarios.
-- **AC-13 (RF-10):** Dada una grilla con shows de distintos días y horarios, cuando el usuario la consulta, entonces aparecen agrupados por día y ordenados por hora de inicio ascendente.
-- **AC-14 (RF-11):** Dados dos shows seleccionados cuyos intervalos horarios se superponen, cuando el usuario consulta o modifica su grilla, entonces ambos se conservan y se muestra una advertencia que identifica el conflicto.
-- **AC-15 (RF-12):** Dado un usuario autenticado, cuando crea un grupo con un nombre válido, entonces el grupo queda disponible y el creador figura como propietario y miembro.
-- **AC-16 (RF-13):** Dado un grupo y un usuario registrado que todavía no es miembro, cuando el propietario lo encuentra por email o nombre de usuario y envía la invitación, entonces el destinatario puede aceptarla para ingresar o rechazarla sin ingresar.
-- **AC-17 (RF-14):** Dado un grupo con varios miembros, cuando el propietario elimina a uno, entonces ese usuario pierde inmediatamente el acceso; si el propietario desea abandonar el grupo, debe transferir antes la propiedad.
-- **AC-18 (RF-15):** Dado un grupo cuyos miembros seleccionaron un show, cuando un miembro consulta la vista grupal, entonces ve el total correcto y los nombres de usuario de todos los interesados.
-- **AC-19 (RF-16):** Dada una vista grupal, cuando un miembro ordena por cantidad de interesados o activa el filtro de coincidencias, entonces el resultado respeta el orden elegido y oculta los shows seleccionados por menos de dos miembros.
-- **AC-20 (RF-17):** Dado un miembro que agrega o quita un show, cuando otro miembro consulta o actualiza la vista grupal, entonces el conteo y la lista de interesados reflejan el cambio dentro del límite definido en RNF-02.
-- **AC-21 (RF-18):** Dado un show seleccionado, cuando la hora del dispositivo convertida a la zona del festival es anterior al inicio, está dentro del intervalo de inicio y finalización, o es posterior a la finalización, entonces el show aparece respectivamente como “próximo”, “en vivo” o “finalizado”.
-- **AC-22 (RF-19):** Dada una grilla abierta durante el inicio o la finalización de un show, cuando transcurre como máximo un minuto desde ese límite horario, entonces el estado visible se actualiza sin recargar la página.
-- **AC-23 (RF-20, RF-21):** Dada una grilla personal con shows seleccionados, cuando el usuario elige uno de los formatos predefinidos, entonces descarga en menos de 5 segundos p95 un PNG con solo esos shows, agrupados por día, ordenados por horario y con las dimensiones elegidas.
-- **AC-24 (RF-22):** Dados un usuario y uno de sus grupos, cuando solicita una exportación grupal, entonces el PNG contiene solo los shows elegidos por ese usuario y la cantidad correcta de miembros coincidentes en cada uno.
-- **AC-25 (RF-23):** Dada una exportación grupal, cuando el usuario elige incluir nombres, entonces el PNG muestra los nombres de usuario coincidentes; cuando elige solo cantidades, ningún nombre de otro miembro aparece en la imagen.
-- **AC-26 (RF-24):** Dado un usuario no autenticado, ajeno a un grupo o sin privilegios administrativos, cuando intenta acceder directamente a un perfil, grilla, grupo, exportación o panel que no le corresponde, entonces el sistema deniega el acceso sin exponer sus datos.
-- **AC-27 (RF-25):** Dados varios festivales publicados, cuando un usuario abre el catálogo y elige uno, entonces consulta únicamente la programación vigente de ese festival.
-- **AC-28 (RF-26):** Dado un usuario con grillas o grupos en dos festivales, cuando cambia de festival, entonces solo ve las selecciones, grupos, invitaciones y coincidencias correspondientes al festival elegido.
-- **AC-29 (RF-27):** Dado el borrador de un festival, cuando el administrador agrega un día, crea sus escenarios y carga artistas con horarios válidos, entonces los shows quedan disponibles para revisión sin modificar la versión publicada.
-- **AC-30 (RF-28):** Dado un CSV con todas las columnas requeridas, cuando el administrador lo importa, entonces las filas válidas se preparan en el borrador; si existe una fila inválida, se informa su fila, campo y causa sin modificar la versión publicada.
-- **AC-31 (RF-29):** Dado un archivo JPEG o PNG válido y un día elegido, cuando el administrador solicita la extracción, entonces el sistema propone los artistas, escenarios y horarios que pudo reconocer y conserva la imagen como referencia del borrador.
-- **AC-32 (RF-30):** Dado un resultado extraído, cuando un dato falta o presenta incertidumbre, entonces queda señalado como no verificado y el administrador puede corregirlo, completarlo o descartar su fila antes de validarla.
-- **AC-33 (RF-31):** Dado un borrador válido y completo, cuando el administrador confirma su publicación, entonces el catálogo muestra la nueva versión completa; si la publicación falla, la versión anterior permanece visible sin cambios parciales.
-- **AC-34 (RF-32):** Dado un festival ya publicado, cuando el administrador comienza a editarlo, entonces obtiene un borrador basado en la versión vigente y los usuarios continúan viendo esa versión hasta que el administrador confirma una nueva publicación.
+- **AC-01 (RF-01, RNF-05):** Dado un despliegue configurado para un festival argentino y un CSV versionado válido, cuando desarrollo ejecuta el importador o *seed*, entonces queda disponible exactamente ese festival con su line-up; la interfaz no ofrece elección ni gestión de otro festival.
+- **AC-02 (RF-01, RNF-05):** Dado un CSV con un campo requerido inválido, cuando desarrollo ejecuta el importador o *seed*, entonces el proceso rechaza la carga y no deja un line-up parcialmente aprovisionado.
+- **AC-03 (RF-02):** Dada una persona sin sesión con una cuenta de Google válida, cuando autoriza el acceso, entonces el sistema crea o recupera su cuenta y le permite iniciar sesión; cuando cierra sesión, deja de acceder al contenido autenticado.
+- **AC-04 (RF-02):** Dado un email no registrado, cuando la persona solicita un código nuevo de seis dígitos e ingresa correctamente el código temporal vigente, entonces el sistema crea su cuenta e inicia la sesión.
+- **AC-05 (RF-02, RNF-06):** Dado un email registrado, cuando su titular solicita volver a ingresar, entonces recibe un código distinto al anterior; tras usarlo correctamente una vez, ese código no puede reutilizarse. Dado un código vencido después de 10 minutos o que acumuló cinco intentos fallidos, cuando una persona intenta verificarlo, entonces el sistema rechaza el acceso.
+- **AC-06 (RF-03):** Dada una persona que completa su primer acceso, cuando elige un nombre de usuario disponible de entre 3 y 30 caracteres, entonces puede ingresar a la aplicación; posteriormente puede modificar su nombre de usuario o avatar. Si otra persona intenta guardar el mismo nombre con cualquier combinación de mayúsculas y minúsculas, o un nombre fuera de ese rango, el sistema rechaza el cambio. Dado un usuario autenticado, cuando busca usuarios registrados por nombre de usuario, entonces puede seleccionar para una invitación un resultado que expone solo nombre de usuario y avatar.
+- **AC-07 (RF-03, RF-20, RNF-04):** Dada una persona autenticada, cuando intenta leer o modificar el perfil completo de otra cuenta, entonces el sistema deniega la operación; solo la propietaria puede leer o modificar su perfil completo.
+- **AC-08 (RF-02, RNF-07):** Dados un email registrado y uno no registrado, cuando se solicitan códigos, entonces las solicitudes y respuestas no revelan si un email está registrado. Cuando se intenta una sexta solicitud para el mismo email dentro de 15 minutos, entonces el sistema la rechaza.
+- **AC-09 (RF-04, RNF-01):** Dada una persona autenticada y el line-up aprovisionado, cuando busca un artista o combina filtros de día y escenario, entonces ve solo los shows que cumplen todos los criterios activos y la consulta responde dentro de las condiciones definidas en RNF-01.
+- **AC-10 (RF-05):** Dada una persona autenticada y un show del line-up, cuando abre su detalle, entonces ve artista, descripción, día, escenario, inicio y finalización.
+- **AC-11 (RF-06):** Dado un show no seleccionado y una persona autenticada, cuando lo agrega a su grilla, entonces aparece en ella; cuando lo quita, deja de aparecer sin afectar las selecciones de otras personas.
+- **AC-12 (RF-07, RNF-01):** Dada una grilla personal con shows de distintos días y horarios, cuando su propietaria la consulta, entonces los shows aparecen agrupados por día y ordenados por hora de inicio ascendente, dentro de las condiciones definidas en RNF-01.
+- **AC-13 (RF-08):** Dados dos shows seleccionados cuyos intervalos se superponen, cuando la persona consulta o modifica su grilla, entonces ambos se conservan y el sistema muestra una advertencia que identifica el conflicto.
+- **AC-14 (RF-09):** Dada una persona autenticada, cuando crea un grupo con nombre válido, entonces figura como propietaria y miembro; al intentar aceptar una invitación que llevaría el total a más de 15 miembros, incluido el propietario, el sistema rechaza la incorporación.
+- **AC-15 (RF-10):** Dado un grupo y un usuario registrado que todavía no es miembro, cuando el propietario lo invita por email o nombre de usuario, entonces el destinatario puede aceptar para ingresar o rechazar sin ingresar.
+- **AC-16 (RF-11):** Dado un miembro ordinario de un grupo, cuando decide abandonarlo, entonces deja de ser miembro y pierde el acceso al grupo.
+- **AC-17 (RF-11):** Dado un grupo con varios miembros, cuando el propietario elimina a uno, entonces esa persona pierde el acceso al grupo; si el propietario desea abandonarlo, debe transferir antes la propiedad.
+- **AC-18 (RF-12):** Dado un grupo cuyos miembros seleccionaron un show, cuando un miembro autorizado consulta la vista grupal, entonces ve el conteo correcto y los nombres de usuario de quienes lo eligieron; el show se marca como coincidencia solo si el conteo es de al menos dos.
+- **AC-19 (RF-13):** Dada una vista grupal, cuando un miembro ordena por horario o cantidad de personas interesadas, entonces el resultado respeta el orden elegido; cuando activa el filtro de coincidencias, se ocultan todos los shows seleccionados por menos de dos miembros.
+- **AC-20 (RF-14, RNF-01):** Dado que un miembro agrega o quita un show, cuando otro miembro autorizado consulta o actualiza la vista grupal, entonces el conteo y los nombres reflejan las selecciones vigentes dentro de las condiciones definidas en RNF-01.
+- **AC-21 (RF-15):** Dado un show seleccionado y el instante UTC autoritativo del servidor convertido a `America/Argentina/Buenos_Aires`, cuando el instante es anterior al inicio, es mayor o igual al inicio y estrictamente anterior al final, o es mayor o igual al final, entonces el show aparece respectivamente como “próximo”, “en vivo” o “finalizado”.
+- **AC-22 (RF-16, RNF-02):** Dada una grilla abierta durante el inicio o la finalización de un show, cuando transcurren hasta 60 segundos desde ese límite, entonces el estado visible se actualiza sin recargar y sin depender de la hora del dispositivo ni de la zona horaria local del servidor.
+- **AC-23 (RF-17, RF-19, RNF-03):** Dada una grilla personal con shows seleccionados, cuando su propietaria elige 1080 × 1920 px o 1080 × 1350 px, entonces descarga un PNG con solo esos shows, agrupados por día, ordenados por horario, con las dimensiones exactas elegidas y dentro de las condiciones definidas en RNF-03.
+- **AC-24 (RF-18, RF-19, RNF-03):** Dado un miembro autorizado y uno de sus grupos, cuando solicita una exportación grupal en cualquiera de los formatos, entonces descarga un PNG que contiene solo los shows que esa persona seleccionó y el conteo correcto de miembros del grupo que también seleccionaron cada show, con las dimensiones exactas elegidas y dentro de las condiciones definidas en RNF-03.
+- **AC-25 (RF-18):** Dada una exportación grupal, cuando la persona elige incluir nombres, entonces el PNG muestra los nombres de usuario de los miembros coincidentes; cuando elige solo conteos, no muestra nombres de otros miembros.
+- **AC-26 (RF-20, RNF-04):** Dada una persona no autenticada, cuando intenta acceder al line-up, al detalle de un show, a una grilla, un grupo, una invitación o una exportación, entonces el sistema deniega la operación sin exponer contenido ni publicar una URL de exportación accesible sin autorización.
+- **AC-27 (RF-20, RNF-04):** Dada una persona autenticada ajena a un grupo o destinataria de otra invitación, cuando intenta leer, modificar o exportar recursos privados que no le corresponden, entonces el sistema deniega la operación sin exponer sus datos.
+- **AC-28 (RNF-06):** Dada cualquier comunicación entre cliente y sistema, cuando se realiza una solicitud o respuesta, entonces usa TLS 1.2 o superior.
 
-## Fuera de Alcance
+## Fuera de alcance
 
-- Alta pública de festivales por organizadores, promotores u otros usuarios.
-- Múltiples administradores, roles administrativos delegables o permisos administrativos por festival.
-- Publicación automática de datos extraídos desde imágenes sin revisión humana.
+- Herramientas administrativas, panel administrativo y cuentas administrativas dentro del producto.
+- CRUD de festivales, catálogo de festivales o elección simultánea entre múltiples festivales.
+- Festivales fuera de Argentina.
+- Carga manual de shows, interfaz de carga CSV, edición de CSV desde la aplicación o cualquier ingreso de line-up por usuarios.
+- OCR, IA o extracción de programación a partir de imágenes.
+- Borradores, flujos de revisión o publicación y versionado de festivales o line-ups visibles.
+- Analítica de producto, métricas de adopción, telemetría de comportamiento o recomendaciones basadas en uso.
 - Compra, reventa, validación o almacenamiento de entradas.
-- Integración en tiempo real con APIs, sitios o redes sociales del festival.
-- Recomendaciones personalizadas, rankings automáticos o sugerencias basadas en gustos.
 - Mensajería, chat, comentarios, publicaciones, reacciones o feed social.
-- Votaciones grupales, aprobación de una grilla común o resolución automática de conflictos.
-- Estados de preferencia como “quizá”, niveles de prioridad o ranking de artistas.
-- Perfiles públicos, enlaces públicos o acceso anónimo a grillas y grupos.
-- Notificaciones push, notificaciones del navegador, emails recordatorios o alertas fuera de la grilla abierta.
-- Modo offline, mapas del predio, geolocalización o rutas entre escenarios.
-- Sincronización con calendarios externos.
-- Aplicaciones móviles nativas.
+- Votaciones grupales, una grilla grupal editable o resolución automática de superposiciones.
+- Estados de preferencia como “quizá”, prioridades o rankings de artistas.
+- Perfiles o enlaces expuestos sin autenticación, acceso anónimo a recursos privados o notificaciones fuera de una grilla abierta.
+- Modo sin conexión, mapas del predio, geolocalización, rutas entre escenarios, calendarios externos o aplicaciones móviles nativas.
 
-## Riesgos y Dependencias
+## Riesgos y dependencias
 
-- **Riesgo:** La programación cargada manualmente, importada o extraída contiene horarios o escenarios incorrectos → **mitigación:** validar el esquema completo, mostrar un borrador revisable y exigir confirmación administrativa antes de publicar.
-- **Riesgo:** Una actualización del festival invalida selecciones existentes → **mitigación:** relacionar las selecciones con identificadores estables, informar shows eliminados o modificados y no reasignar selecciones automáticamente.
-- **Riesgo:** Los grupos grandes vuelven difícil interpretar las coincidencias → **mitigación:** mostrar conteos primero, revelar nombres bajo demanda y permitir ordenar y filtrar.
-- **Riesgo:** Se expone información privada por URLs predecibles o controles incompletos → **mitigación:** aplicar autorización del lado del servidor en cada recurso y cubrir accesos cruzados con pruebas automatizadas.
-- **Riesgo:** La selección binaria no representa dudas o prioridades → **mitigación:** medir solicitudes y uso antes de incorporar estados adicionales después del MVP.
-- **Riesgo:** Un reloj incorrecto en el dispositivo muestra estados temporales equivocados → **mitigación:** presentar la zona horaria del festival, detectar diferencias significativas con la hora del servidor y advertir al usuario.
-- **Riesgo:** Los códigos por email se solicitan de manera abusiva o son interceptados → **mitigación:** aplicar vencimiento, uso único, límites de intentos y solicitudes, y monitoreo de eventos anómalos.
-- **Riesgo:** Una grilla extensa pierde legibilidad al adaptarse a dimensiones fijas → **mitigación:** definir límites visuales, ajustar tipografía y dividir el contenido por día cuando no entre en una única composición legible.
-- **Riesgo:** Un usuario comparte fuera de la aplicación una exportación que contiene nombres de terceros → **mitigación:** usar cantidades por defecto, requerir una elección explícita para incluir nombres y mostrar una advertencia previa a la descarga.
-- **Riesgo:** OCR o IA interpreta incorrectamente texto, escenarios u horarios de una imagen → **mitigación:** mantener el resultado como no verificado, señalar incertidumbres, conservar la imagen original y exigir revisión humana.
-- **Riesgo:** La única cuenta administrativa queda bloqueada o comprometida → **mitigación:** establecer un procedimiento seguro de recuperación, proteger las credenciales fuera de la aplicación y auditar todos los accesos y cambios.
-- **Riesgo:** Una edición posterior rompe selecciones de usuarios asociadas a shows publicados → **mitigación:** usar identificadores estables, mostrar el impacto antes de republicar y preservar o invalidar selecciones de forma explícita.
-- **Dependencia:** El organizador o administrador debe proveer información confiable mediante carga manual, CSV o imágenes de programación.
-- **Dependencia:** Debe definirse una zona horaria única para el festival; todas las fechas y horas se almacenan y presentan con esa referencia.
-- **Dependencia:** Google OAuth y el proveedor de envío de emails transaccionales deben cumplir los requisitos de privacidad, seguridad y disponibilidad del producto.
-- **Dependencia:** El almacenamiento de avatares debe cumplir los requisitos de privacidad y disponibilidad del producto.
-- **Dependencia:** El motor de generación de imágenes debe renderizar tipografías y composiciones de manera consistente en los formatos PNG definidos.
-- **Dependencia:** El servicio de OCR o IA debe aceptar las imágenes previstas y devolver datos con suficiente estructura para construir un borrador revisable.
-- **Dependencia:** Debe existir almacenamiento privado para imágenes de origen y borradores administrativos.
-- **Dependencia:** El formato CSV, los límites de archivo, las reglas de identificadores estables y la estrategia de versionado deben documentarse antes de implementar la administración.
+| Tipo | Descripción | Mitigación o condición |
+|---|---|---|
+| Riesgo | El CSV provisto para el aprovisionamiento puede contener horarios, escenarios o artistas erróneos. | Validar el esquema antes de la carga y mantener el archivo versionado para revisión técnica. |
+| Riesgo | Un cambio operativo del line-up puede volver inconsistentes selecciones existentes. | Usar identificadores estables, evaluar el impacto durante el importador o *seed* y no reasignar selecciones automáticamente. |
+| Riesgo | La privacidad puede vulnerarse mediante accesos directos a recursos de otro usuario. | Aplicar autorización del lado del servidor y cubrir accesos cruzados con pruebas automatizadas. |
+| Riesgo | Incluir nombres de terceros en un PNG facilita que se compartan fuera del grupo. | Ofrecer conteos sin nombres como opción y requerir una elección explícita para incluirlos. |
+| Riesgo | Una grilla extensa puede perder legibilidad en tamaños PNG fijos. | Definir composición, tipografía y reglas de corte verificables para ambos formatos. |
+| Riesgo | Un reloj de cliente o una zona local incorrecta puede inducir estados temporales erróneos. | Usar exclusivamente el instante UTC entregado por el servidor y la zona fija `America/Argentina/Buenos_Aires`. |
+| Dependencia | Desarrollo debe definir y mantener la configuración de metadatos del festival argentino único. | La configuración debe estar disponible antes del despliegue. |
+| Dependencia | Desarrollo debe disponer de un CSV versionado y de un proceso de importación o *seed* a base de datos. | El proceso debe ejecutarse como parte del aprovisionamiento, fuera de la interfaz de usuario. |
+| Dependencia | Se requieren Google OAuth y un proveedor de email transaccional para las cuentas autenticadas. | Deben permitir el acceso por Google o por código temporal de seis dígitos, y asociar la identidad a un nombre de usuario único. |
+| Dependencia | El servidor debe entregar un instante UTC confiable. | La interfaz debe recibirlo para evaluar los estados con `America/Argentina/Buenos_Aires`. |
+| Dependencia | El motor de generación de imágenes debe renderizar PNG de manera consistente. | Debe soportar exactamente 1080 × 1920 px y 1080 × 1350 px dentro del objetivo de RNF-03. |
