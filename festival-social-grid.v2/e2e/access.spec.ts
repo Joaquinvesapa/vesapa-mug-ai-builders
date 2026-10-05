@@ -1,22 +1,5 @@
-import { expect, test, type Page } from "@playwright/test";
-import { latestMessageTo } from "../src/test/integration/mailpit";
-
-const uniqueEmail = () =>
-  `e2e-${Date.now()}-${Math.random().toString(36).slice(2)}@example.com`;
-const uniqueUsername = () => `u${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
-
-async function readCode(email: string): Promise<string> {
-  await expect.poll(() => latestMessageTo(email)).not.toBeNull();
-  return /\b(\d{6})\b/.exec((await latestMessageTo(email))!.text)![1];
-}
-
-async function signInWithEmail(page: Page, email: string) {
-  await page.goto("/login");
-  await page.getByLabel("Email").fill(email);
-  await page.getByRole("button", { name: "Enviar código" }).click();
-  await page.getByLabel("Código").fill(await readCode(email));
-  await page.getByRole("button", { name: "Entrar", exact: true }).click();
-}
+import { expect, test } from "@playwright/test";
+import { readCode, signInWithEmail, uniqueEmail, uniqueUsername } from "./helpers";
 
 test("redirects an anonymous visitor to login without exposing content (AC-98)", async ({
   page,

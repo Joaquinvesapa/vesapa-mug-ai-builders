@@ -41,3 +41,36 @@ export function festivalLocalToUtc(value: string): Date | null {
   }
   return new Date(instant);
 }
+
+const timeFormat = new Intl.DateTimeFormat("es-AR", {
+  timeZone: FESTIVAL_TIME_ZONE,
+  hour: "2-digit",
+  minute: "2-digit",
+  hourCycle: "h23",
+});
+
+/** "HH:MM" of an instant in the festival zone. */
+export function formatFestivalTime(instant: Date): string {
+  return timeFormat.format(instant);
+}
+
+const weekdayFormat = new Intl.DateTimeFormat("es-AR", { timeZone: "UTC", weekday: "long" });
+
+/** "sábado 21/11" for a YYYY-MM-DD festival day. */
+export function formatFestivalDay(day: string): string {
+  const [y, m, d] = day.split("-").map(Number);
+  // A calendar date has no zone; format it at UTC midnight to keep it intact.
+  const weekday = weekdayFormat.format(new Date(Date.UTC(y, m - 1, d)));
+  return `${weekday} ${String(d).padStart(2, "0")}/${String(m).padStart(2, "0")}`;
+}
+
+/** Every YYYY-MM-DD day from startDate to endDate, inclusive. */
+export function festivalDays({ startDate, endDate }: { startDate: string; endDate: string }): string[] {
+  const days: string[] = [];
+  const [y, m, d] = startDate.split("-").map(Number);
+  for (let i = 0; ; i++) {
+    const day = new Date(Date.UTC(y, m - 1, d + i)).toISOString().slice(0, 10);
+    if (day > endDate) return days;
+    days.push(day);
+  }
+}

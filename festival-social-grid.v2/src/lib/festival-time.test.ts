@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { festivalLocalToUtc } from "./festival-time";
+import {
+  festivalDays,
+  festivalLocalToUtc,
+  formatFestivalDay,
+  formatFestivalTime,
+} from "./festival-time";
 
 describe("festivalLocalToUtc", () => {
   it("converts Buenos Aires wall time to the UTC instant", () => {
@@ -33,4 +38,22 @@ describe("festivalLocalToUtc", () => {
       expect(festivalLocalToUtc(value)).toBeNull();
     },
   );
+});
+
+describe("festival display formatting", () => {
+  it("formats the start and end time in the festival zone", () => {
+    expect(formatFestivalTime(new Date("2026-11-22T04:00:00.000Z"))).toBe("01:00");
+  });
+
+  it("formats a festival day with its weekday", () => {
+    expect(formatFestivalDay("2026-11-21")).toBe("sábado 21/11");
+  });
+
+  it("lists every day of the festival", () => {
+    expect(festivalDays({ startDate: "2026-11-30", endDate: "2026-12-02" })).toEqual([
+      "2026-11-30",
+      "2026-12-01",
+      "2026-12-02",
+    ]);
+  });
 });
