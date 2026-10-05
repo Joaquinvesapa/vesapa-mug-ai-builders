@@ -4,7 +4,9 @@
 
 - Leé `prd.md` antes de proponer o implementar cambios. Sus RF, RNF, AC y exclusiones definen el alcance del MVP. Vinculá cada cambio con los criterios de aceptación que corresponda; no conviertas supuestos en requisitos.
 - El producto representa **un único festival argentino por despliegue**. La configuración del festival y el CSV versionado se aprovisionan por desarrollo; no construyas administración de festivales ni carga de datos desde la interfaz.
-- Stack acordada: **Next.js para interfaz y backend dentro de Next.js**, y **PostgreSQL** para persistencia. Vercel es una posibilidad de hosting, **no una decisión confirmada**.
+- Stack acordada: **Next.js para interfaz y backend dentro de Next.js**, y **PostgreSQL** para persistencia.
+- Estilos: **Tailwind CSS** es la única librería de estilos. No agregues CSS Modules, CSS-in-JS, kits de componentes ni otra librería de estilos sin acuerdo del propietario.
+- Vercel es una posibilidad de hosting, **no una decisión confirmada**.
 - Este documento fija reglas de trabajo, no una arquitectura detallada ni comandos que aún no existen. Antes de ejecutar pruebas o generar código, inspeccioná la estructura real del repositorio.
 
 ## Decisiones y planificación
