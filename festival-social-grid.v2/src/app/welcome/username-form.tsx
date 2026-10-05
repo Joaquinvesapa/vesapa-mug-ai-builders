@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { Button, Field, FormError } from "@/components/ui";
 import { saveUsername, type WelcomeState } from "./actions";
 
 export function UsernameForm() {
@@ -10,13 +11,18 @@ export function UsernameForm() {
   );
 
   return (
-    <form action={action}>
-      <label htmlFor="username">Nombre de usuario</label>
-      <input id="username" name="username" required autoComplete="username" />
-      <button type="submit" disabled={pending}>
+    <form action={action} className="flex flex-col gap-4">
+      <Field
+        label="Nombre de usuario"
+        id="username"
+        name="username"
+        autoComplete="username"
+        required
+      />
+      <FormError>{state.error}</FormError>
+      <Button type="submit" disabled={pending}>
         Guardar
-      </button>
-      {state.error && <p role="alert">{state.error}</p>}
+      </Button>
     </form>
   );
 }
