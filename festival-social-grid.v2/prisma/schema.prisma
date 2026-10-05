@@ -74,3 +74,21 @@ model EmailCode {
 
   @@index([email, createdAt])
 }
+
+/// A show of the line-up, loaded only by the CSV importer (RF-03).
+model Show {
+  /// Stable slug from the CSV; kept across reimports.
+  id          String   @id
+  artist      String
+  description String
+  /// Festival day as YYYY-MM-DD, even when the show ends after midnight (RF-71).
+  day         String
+  stage       String
+  startsAt    DateTime
+  endsAt      DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([day, startsAt])
+  @@index([stage])
+}
