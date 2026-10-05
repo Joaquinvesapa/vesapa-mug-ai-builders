@@ -19,15 +19,17 @@ export default defineConfig({
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: {
-    command: `pnpm dev --port ${port}`,
+    // A production build avoids clashing with a running `next dev`.
+    command: `pnpm build && pnpm start --port ${port}`,
     url: baseURL,
     // Never reuse a server that may be pointed at the development database.
     reuseExistingServer: false,
-    timeout: 120_000,
+    timeout: 300_000,
     // Variables already in the environment take precedence over .env in Next.js.
     env: {
       DATABASE_URL: process.env.TEST_DATABASE_URL ?? "",
       AUTH_URL: baseURL,
+      AUTH_TRUST_HOST: "true",
     },
   },
 });
