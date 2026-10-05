@@ -30,6 +30,7 @@
 - Respetá los límites de códigos de email, intentos y solicitudes, la no enumeración de cuentas y TLS conforme al PRD. Nunca registres secretos o códigos en archivos versionados.
 - El importador CSV debe validar antes de cargar y evitar estados parcialmente aprovisionados. Conservá identificadores estables y evaluá el impacto en selecciones existentes al cambiar el line-up.
 - No agregues servicios, cuentas ni infraestructura real para pruebas sin acordar previamente su alcance y manejo de credenciales.
+- **Nunca ejecutes comandos que requieran root o permisos de administrador** (`sudo`, cambios de grupos, servicios del sistema, etc.). Informá qué comando hace falta y para qué; siempre lo ejecuta el propietario.
 
 ## Pendientes que requieren consulta
 
