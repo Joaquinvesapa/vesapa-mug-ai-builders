@@ -25,6 +25,7 @@ export default defineConfig({
           name: "integration",
           environment: "node",
           include: ["src/**/*.int.test.ts"],
+          globalSetup: ["./src/test/integration/global-setup.ts"],
           // Integration tests share one database; run files sequentially.
           fileParallelism: false,
           env: { DATABASE_URL: process.env.TEST_DATABASE_URL ?? "" },

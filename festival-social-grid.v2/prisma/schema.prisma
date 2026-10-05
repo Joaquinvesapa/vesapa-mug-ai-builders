@@ -6,3 +6,71 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+// User, Account, Session and VerificationToken follow the Auth.js Prisma
+// adapter schema; extra fields are ours.
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  /// Chosen on first access (RF-11); null until then.
+  username      String?
+  /// Lowercased username; enforces case-insensitive uniqueness (RF-13).
+  usernameKey   String?   @unique
+  accounts      Account[]
+  sessions      Session[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@id([provider, providerAccountId])
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+}
+
+/// Six-digit sign-in code sent by email (RF-06, RNF-08..RNF-11).
+model EmailCode {
+  id             String    @id @default(cuid())
+  email          String
+  /// Only a hash is stored, never the code itself.
+  codeHash       String
+  expiresAt      DateTime
+  failedAttempts Int       @default(0)
+  usedAt         DateTime?
+  createdAt      DateTime  @default(now())
+
+  @@index([email, createdAt])
+}
