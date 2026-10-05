@@ -15,7 +15,8 @@
     "test:integration": "vitest run --project integration",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "lineup:import": "tsx scripts/import-lineup.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.3",
