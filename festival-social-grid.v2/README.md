@@ -15,4 +15,5 @@ pnpm dev
 
 - `festival_dev` is the development database; `festival_test` is wiped by integration tests.
 - Mailpit captures outgoing email: SMTP on `localhost:1025`, web UI on <http://localhost:8025>.
+- `pnpm test` runs every suite; `pnpm test:unit` and `pnpm test:integration` run one project. Integration tests always use `TEST_DATABASE_URL`.
 - The test database is created only on the first start of an empty volume. To recreate it, run `docker compose down -v`, which also deletes development data.
