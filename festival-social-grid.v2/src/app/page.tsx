@@ -17,6 +17,15 @@ export default async function Home() {
           Todos los shows, por día y por escenario.
         </span>
       </Link>
+      <Link
+        href="/grid"
+        className="mt-3 block rounded-2xl bg-white p-5 shadow-sm ring-1 ring-neutral-200 transition hover:ring-violet-300"
+      >
+        <span className="font-medium">Mi grilla</span>
+        <span className="mt-1 block text-sm text-neutral-500">
+          Los shows que elegiste, día por día.
+        </span>
+      </Link>
     </AppShell>
   );
 }
