@@ -3,7 +3,7 @@
 import { useActionState, useState } from "react";
 import { Avatar } from "@/components/avatar";
 import { Button, Field, FormError } from "@/components/ui";
-import { AVATAR_SHAPES, AVATAR_SHAPE_LABELS, type Avatar as AvatarValue } from "@/lib/avatar";
+import { AVATAR_COLORS, AVATAR_SHAPES, AVATAR_SHAPE_LABELS, type Avatar as AvatarValue } from "@/lib/avatar";
 import { saveAvatar, saveUsername, type FormState } from "./actions";
 
 const card = "rounded-2xl bg-white p-6 shadow-sm ring-1 ring-neutral-200";
@@ -57,19 +57,28 @@ export function AvatarForm({ avatar }: { avatar: AvatarValue }) {
           ))}
         </div>
       </fieldset>
-      <div className="flex items-center gap-3">
-        <label htmlFor="color" className="text-sm font-medium text-neutral-700">
-          Color
-        </label>
-        <input
-          id="color"
-          name="color"
-          type="color"
-          defaultValue={avatar.color}
-          onInput={(e) => setColor(e.currentTarget.value)}
-          className="h-10 w-16 cursor-pointer rounded-lg border border-neutral-300 bg-white p-1"
-        />
-      </div>
+      <fieldset>
+        <legend className="mb-2 text-sm font-medium text-neutral-700">Color</legend>
+        <div className="grid grid-cols-8 gap-2">
+          {AVATAR_COLORS.map((option) => (
+            <label
+              key={option.value}
+              className="relative flex aspect-square cursor-pointer items-center justify-center rounded-full ring-offset-2 has-checked:ring-2 has-checked:ring-neutral-900 has-focus-visible:outline-2 has-focus-visible:outline-offset-4 has-focus-visible:outline-violet-600"
+              style={{ backgroundColor: option.value }}
+            >
+              <input
+                type="radio"
+                name="color"
+                value={option.value}
+                checked={color === option.value}
+                onChange={() => setColor(option.value)}
+                aria-label={option.label}
+                className="absolute inset-0 cursor-pointer opacity-0"
+              />
+            </label>
+          ))}
+        </div>
+      </fieldset>
       <FormError>{state.error}</FormError>
       <Button type="submit" disabled={pending}>
         Guardar avatar

@@ -21,7 +21,7 @@ model User {
   usernameKey   String?   @unique
   /// One of AVATAR_SHAPES (RF-16).
   avatarShape   String    @default("circle")
-  /// Free hex color, lowercase (RF-17).
+  /// One of AVATAR_COLORS, lowercase (RF-17).
   avatarColor   String    @default("#7c3aed")
   accounts      Account[]
   sessions      Session[]

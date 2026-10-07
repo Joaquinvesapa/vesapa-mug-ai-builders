@@ -42,14 +42,14 @@ test.describe("own profile", () => {
 
   test("picks a shape (AC-25) and a color (AC-26)", async ({ page }) => {
     await page.getByRole("radio", { name: "Hexágono" }).check();
-    await page.getByLabel("Color").fill("#10b981");
+    await page.getByRole("radio", { name: "Esmeralda" }).check();
     await page.getByRole("button", { name: "Guardar avatar" }).click();
     const saved = page.getByRole("link", { name: "Mi perfil" }).getByRole("img");
     await expect(saved).toHaveAccessibleName("Avatar: Hexágono");
 
     await page.reload();
     await expect(saved).toHaveAccessibleName("Avatar: Hexágono");
-    await expect(saved.locator("path")).toHaveAttribute("fill", "#10b981");
+    await expect(saved.locator("path")).toHaveAttribute("fill", "#059669");
   });
 });
 

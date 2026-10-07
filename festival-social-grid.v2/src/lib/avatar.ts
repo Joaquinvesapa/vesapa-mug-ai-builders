@@ -11,9 +11,22 @@ export function isAvatarShape(value: string): value is AvatarShape {
   return (AVATAR_SHAPES as readonly string[]).includes(value);
 }
 
-/** Free color (RF-17) as a 6-digit hex, normalized to lowercase; null if invalid. */
+/** App palette for avatar colors (RF-17): Tailwind 600 shades. */
+export const AVATAR_COLORS = [
+  { value: "#7c3aed", label: "Violeta" },
+  { value: "#c026d3", label: "Fucsia" },
+  { value: "#db2777", label: "Rosa" },
+  { value: "#ea580c", label: "Naranja" },
+  { value: "#d97706", label: "Ámbar" },
+  { value: "#059669", label: "Esmeralda" },
+  { value: "#0284c7", label: "Celeste" },
+  { value: "#2563eb", label: "Azul" },
+] as const;
+
+/** A palette color, normalized to lowercase; null if outside the palette. */
 export function normalizeAvatarColor(value: string): string | null {
-  return /^#[0-9a-f]{6}$/i.test(value) ? value.toLowerCase() : null;
+  const color = value.toLowerCase();
+  return AVATAR_COLORS.some((c) => c.value === color) ? color : null;
 }
 
 /** SVG geometry for each shape in a 100 × 100 viewBox. */

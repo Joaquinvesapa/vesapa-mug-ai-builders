@@ -22,7 +22,7 @@ export async function getProfile(userId: string): Promise<Profile | null> {
     username: user.username,
     avatar: {
       shape: isAvatarShape(user.avatarShape) ? user.avatarShape : DEFAULT_AVATAR.shape,
-      color: user.avatarColor,
+      color: normalizeAvatarColor(user.avatarColor) ?? DEFAULT_AVATAR.color,
     },
   };
 }

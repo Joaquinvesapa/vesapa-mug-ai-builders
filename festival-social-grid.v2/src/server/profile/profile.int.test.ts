@@ -34,19 +34,19 @@ describe("profile", () => {
   });
 
   it("saves a shape from the set (AC-25) and a new color (AC-26)", async () => {
-    expect(await updateAvatar(ana, { shape: "hexagon", color: "#10B981" })).toEqual({ ok: true });
+    expect(await updateAvatar(ana, { shape: "hexagon", color: "#059669" })).toEqual({ ok: true });
 
-    expect((await getProfile(ana))?.avatar).toEqual({ shape: "hexagon", color: "#10b981" });
+    expect((await getProfile(ana))?.avatar).toEqual({ shape: "hexagon", color: "#059669" });
   });
 
   it("rejects a shape outside the set", async () => {
-    expect(await updateAvatar(ana, { shape: "blob", color: "#10b981" })).toEqual({
+    expect(await updateAvatar(ana, { shape: "blob", color: "#059669" })).toEqual({
       ok: false,
       reason: "invalid_shape",
     });
   });
 
-  it.each(["red", "#12345", "#1234567", "#gggggg", ""])("rejects the color %j", async (color) => {
+  it.each(["#10b981", "#ffffff", "red", "#gggggg", ""])("rejects the color %j outside the palette", async (color) => {
     expect(await updateAvatar(ana, { shape: "circle", color })).toEqual({
       ok: false,
       reason: "invalid_color",
@@ -54,7 +54,7 @@ describe("profile", () => {
   });
 
   it("only changes the owner's avatar, never another person's (AC-30)", async () => {
-    await updateAvatar(ana, { shape: "star", color: "#000000" });
+    await updateAvatar(ana, { shape: "star", color: "#db2777" });
 
     expect((await getProfile(beto))?.avatar).toEqual({ shape: "circle", color: "#7c3aed" });
   });

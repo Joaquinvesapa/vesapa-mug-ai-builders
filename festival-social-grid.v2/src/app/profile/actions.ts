@@ -30,7 +30,7 @@ export async function saveAvatar(_prev: FormState, formData: FormData): Promise<
   });
   if (!result.ok) {
     return {
-      error: result.reason === "invalid_shape" ? "Elegí una forma de la lista." : "Elegí un color válido.",
+      error: result.reason === "invalid_shape" ? "Elegí una forma de la lista." : "Elegí un color de la paleta.",
     };
   }
   refresh();
