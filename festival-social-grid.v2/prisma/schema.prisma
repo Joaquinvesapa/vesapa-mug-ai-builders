@@ -21,6 +21,7 @@ model User {
   usernameKey   String?   @unique
   accounts      Account[]
   sessions      Session[]
+  selections    Selection[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }
@@ -86,9 +87,23 @@ model Show {
   stage       String
   startsAt    DateTime
   endsAt      DateTime
+  selections  Selection[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   @@index([day, startsAt])
   @@index([stage])
+}
+
+/// A show in someone's personal grid (RF-24). Overlaps are allowed (RF-28).
+model Selection {
+  userId    String
+  showId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// Removing a show is guarded by the importer (--allow-removals).
+  show      Show     @relation(fields: [showId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([userId, showId])
+  @@index([showId])
 }
