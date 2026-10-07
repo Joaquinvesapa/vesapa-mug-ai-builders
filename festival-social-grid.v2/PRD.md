@@ -50,7 +50,7 @@ Festival Social Grid es un MVP autenticado para consultar el line-up de un únic
 - **RF-01:** El sistema debe exponer exactamente un festival de Argentina.
 - **RF-02:** El sistema debe leer los metadatos del festival desde configuración de desarrollo.
 - **RF-03:** El importador debe cargar el line-up desde un CSV versionado ejecutado por desarrollo.
-- **RF-04:** El importador debe rechazar la carga completa cuando un campo requerido de algún show es inválido. Campos requeridos (derivados de RF-23, **[PENDIENTE: confirmar]**): artista, descripción, día, escenario, inicio y finalización.
+- **RF-04:** El importador debe rechazar la carga completa cuando un campo requerido de algún show es inválido. Campos requeridos: id, artista, descripción, día, escenario, inicio y finalización.
 - **RF-71:** El sistema debe asignar cada show al día de festival indicado en el CSV, aunque su finalización ocurra después de medianoche.
 
 ### Autenticación y cuenta
@@ -68,7 +68,7 @@ Festival Social Grid es un MVP autenticado para consultar el line-up de un únic
 - **RF-14:** El sistema debe permitir a cada persona leer su perfil completo.
 - **RF-15:** El sistema debe permitir a cada persona modificar su nombre de usuario.
 - **RF-16:** El sistema debe permitir elegir el avatar entre un set de formas abstractas.
-- **RF-17:** El sistema debe permitir cambiar el color del avatar. **[PENDIENTE: ¿paleta fija o color libre?]**
+- **RF-17:** El sistema debe permitir cambiar el color del avatar entre una paleta fija de 8 colores de la aplicación (violeta, fucsia, rosa, naranja, ámbar, esmeralda, celeste y azul).
 - **RF-18:** El sistema debe permitir a usuarios autenticados buscar usuarios por nombre de usuario.
 - **RF-19:** La búsqueda de usuarios debe exponer solo nombre de usuario y avatar.
 - **RF-70:** El sistema debe impedir que una persona lea o modifique el perfil completo de otra.
@@ -204,7 +204,7 @@ Festival Social Grid es un MVP autenticado para consultar el line-up de un únic
 - **AC-39 (RF-25):** Dado un show seleccionado, cuando se quita desde el detalle, entonces deja de aparecer en la grilla y las selecciones de otras personas no cambian.
 - **AC-40 (RF-26):** Dada una grilla con 2 shows del día 1 y 1 del día 2, cuando se consulta, entonces se muestran 2 secciones de día con 2 y 1 shows.
 - **AC-41 (RF-27):** Dados dos shows seleccionados con intervalos solapados, cuando se consulta la grilla, entonces se muestra una advertencia que nombra a ambos.
-- **AC-42 (RF-27):** Dados dos shows donde uno termina exactamente cuando empieza el otro, cuando se consulta la grilla, entonces no se muestra advertencia. **[PENDIENTE: confirmar que el contacto de bordes no es superposición]**
+- **AC-42 (RF-27):** Dados dos shows donde uno termina exactamente cuando empieza el otro, cuando se consulta la grilla, entonces no se muestra advertencia.
 - **AC-43 (RF-28):** Dados dos shows solapados, cuando se agrega el segundo, entonces ambos permanecen seleccionados.
 
 ### Grupos e invitaciones
