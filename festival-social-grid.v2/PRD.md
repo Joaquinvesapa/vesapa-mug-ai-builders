@@ -33,7 +33,7 @@ Festival Social Grid es un MVP autenticado para consultar el line-up de un únic
 | Coincidencia | Existe solo cuando al menos dos miembros seleccionaron el mismo show. |
 | Día del show | Cada show pertenece al día de festival indicado en el CSV, aunque termine después de medianoche (ej.: un show del sábado a la 1 am del domingo pertenece al sábado). |
 | Tiempo | El servidor entrega el instante UTC autoritativo; la comparación usa la zona IANA fija `America/Argentina/Buenos_Aires`. No se usa la hora del dispositivo ni la zona local del servidor. |
-| Exportación | PNG personal y grupal en dos formatos fijos. La grupal parte de los shows de quien la solicita, incorpora conteos y puede incluir nombres. No hay máximo de shows: se muestra la grilla completa de cada día. |
+| Exportación | PNG personal y grupal en dos formatos fijos. La grupal parte de los shows de quien la solicita, incorpora conteos y puede incluir nombres. Cada PNG corresponde a un día elegido antes de descargar y lo muestra como timeline de doble entrada (horario × escenario). No hay máximo de shows: se muestra la grilla completa de ese día. |
 | Objetivos | Cualitativos (sin métricas de adopción, por no haber analítica). |
 
 ## Objetivos
@@ -121,14 +121,14 @@ Festival Social Grid es un MVP autenticado para consultar el line-up de un únic
 - **RF-56:** El sistema debe actualizar los estados temporales de una grilla abierta sin recarga manual (plazo en RNF-02).
 
 ### Exportación
-- **RF-57:** El sistema debe generar un PNG de la grilla personal con solo los shows seleccionados, agrupados por día.
+- **RF-57:** El sistema debe generar un PNG de la grilla personal de un día elegido, con solo los shows seleccionados de ese día, en un timeline de doble entrada (horario × escenario) con todos los escenarios como columnas.
 - **RF-58:** El sistema debe generar un PNG grupal con los shows seleccionados por la persona solicitante.
 - **RF-59:** El PNG grupal debe incluir, para cada show, el conteo de miembros del grupo que también lo seleccionaron.
 - **RF-60:** El sistema debe ofrecer en la exportación grupal una opción explícita para incluir nombres de usuario.
 - **RF-61:** El PNG grupal no debe mostrar nombres de un show seleccionado por menos de dos miembros, aun con la opción activada.
 - **RF-62:** El sistema debe ofrecer exportación en 1080 × 1920 px.
 - **RF-63:** El sistema debe ofrecer exportación en 1080 × 1350 px.
-- **RF-64:** El PNG debe incluir todos los shows seleccionados de cada día, sin tope de cantidad. **[PENDIENTE: ver riesgo de legibilidad]**
+- **RF-64:** El PNG debe incluir todos los shows seleccionados del día exportado, sin tope de cantidad.
 
 ### Autenticación y autorización del contenido
 - **RF-65:** El sistema debe requerir autenticación para todo contenido, incluidos line-up y detalle.
@@ -259,13 +259,13 @@ Festival Social Grid es un MVP autenticado para consultar el line-up de un únic
 ### Exportación
 - **AC-87 (RF-57, RF-62):** Dada una grilla personal, cuando se exporta en 1080 × 1920, entonces se descarga un PNG de exactamente 1080 × 1920 px.
 - **AC-88 (RF-57, RF-63):** Dada una grilla personal, cuando se exporta en 1080 × 1350, entonces se descarga un PNG de exactamente 1080 × 1350 px.
-- **AC-89 (RF-57):** Dada una grilla con 3 shows seleccionados de 2 días, cuando se exporta, entonces el PNG contiene exactamente esos 3 shows agrupados en 2 días.
+- **AC-89 (RF-57):** Dada una grilla con 2 shows seleccionados del día 1 y 1 del día 2, cuando se exporta el día 1, entonces el PNG contiene exactamente esos 2 shows, ubicados en la columna de su escenario y en su franja horaria.
 - **AC-90 (RF-58, RF-62, RF-63):** Dado un miembro de un grupo, cuando solicita la exportación grupal en cada formato, entonces el PNG tiene exactamente las dimensiones elegidas y contiene solo los shows que él seleccionó.
 - **AC-91 (RF-59):** Dado un show seleccionado por el solicitante y otros 2 miembros, cuando se genera el PNG grupal, entonces el show muestra conteo 3.
 - **AC-92 (RF-60, RF-61):** Dada una exportación grupal con nombres activados, cuando un show fue seleccionado por 2 miembros, entonces el PNG muestra sus nombres de usuario.
 - **AC-93 (RF-61):** Dada una exportación grupal con nombres activados, cuando un show fue seleccionado por 1 miembro, entonces el PNG no muestra nombres para ese show.
 - **AC-94 (RF-60):** Dada una exportación grupal sin activar nombres, cuando un show fue seleccionado por 3 miembros, entonces el PNG no muestra ningún nombre.
-- **AC-95 (RF-64):** Dada una grilla con 30 shows en 3 días, cuando se exporta, entonces el PNG incluye los 30 shows.
+- **AC-95 (RF-64):** Dada una grilla con 10 shows en un mismo día, cuando se exporta ese día, entonces el PNG incluye los 10 shows.
 - **AC-96 (RNF-03):** Dado el *fixture* y las condiciones de RNF-03, cuando se miden las 100 exportaciones, entonces el p95 es inferior a 5 s.
 - **AC-97 (RNF-01):** Dado el *fixture* y las condiciones de RNF-01, cuando se miden las solicitudes de line-up, grilla personal y vista grupal, entonces el p95 de cada operación es inferior a 2 s.
 
@@ -307,7 +307,7 @@ Festival Social Grid es un MVP autenticado para consultar el line-up de un únic
 | Riesgo | Un cambio del line-up puede volver inconsistentes selecciones existentes. | Identificadores estables, evaluar impacto en el importador y no reasignar selecciones automáticamente. |
 | Riesgo | La privacidad puede vulnerarse por accesos directos a recursos ajenos. | Autorización del lado del servidor y pruebas de acceso cruzado (RNF-04, RNF-05). |
 | Riesgo | Incluir nombres de terceros en un PNG facilita compartirlos fuera del grupo. | Conteos sin nombres por defecto y elección explícita para incluirlos (RF-60). |
-| Riesgo | Sin tope de shows (RF-64), una grilla extensa puede no ser legible en tamaños PNG fijos. | **[PENDIENTE]** definir regla de composición o aceptar el riesgo; no hay RNF que lo verifique. |
+| Riesgo | Sin tope de shows (RF-64), una grilla extensa puede no ser legible en tamaños PNG fijos. | Mitigado: un PNG por día en formato timeline, donde cada show ocupa el alto proporcional a su duración; no hay RNF que verifique la legibilidad. |
 | Riesgo | Un reloj de cliente o zona local incorrectos pueden inducir estados erróneos. | Usar solo el instante UTC del servidor y `America/Argentina/Buenos_Aires`. |
 | Riesgo | La enumeración de usuarios por búsqueda de nombre de usuario sigue siendo posible. | Aceptado: la búsqueda es parte del producto y solo expone nombre de usuario y avatar (RF-19). |
 | Dependencia | Desarrollo debe mantener la configuración de metadatos del festival único. | Disponible antes del despliegue. |
