@@ -19,6 +19,10 @@ model User {
   username      String?
   /// Lowercased username; enforces case-insensitive uniqueness (RF-13).
   usernameKey   String?   @unique
+  /// One of AVATAR_SHAPES (RF-16).
+  avatarShape   String    @default("circle")
+  /// Free hex color, lowercase (RF-17).
+  avatarColor   String    @default("#7c3aed")
   accounts      Account[]
   sessions      Session[]
   selections    Selection[]
