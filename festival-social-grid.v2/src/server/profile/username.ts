@@ -13,21 +13,30 @@ export type SetUsernameResult =
   | { ok: true; username: string }
   | { ok: false; reason: "invalid_length" | "taken" };
 
+/** Trimmed username if its length is valid (RF-12), otherwise null. */
+export function normalizeUsername(raw: string): string | null {
+  const username = raw.trim();
+  // Spread counts code points, so "ñ" is one character.
+  const length = [...username].length;
+  return length < USERNAME_MIN_LENGTH || length > USERNAME_MAX_LENGTH
+    ? null
+    : username;
+}
+
+/** Key enforcing case-insensitive uniqueness (RF-13). */
+export const usernameKey = (username: string) => username.toLowerCase();
+
 export async function setUsername(
   userId: string,
   raw: string,
 ): Promise<SetUsernameResult> {
-  const username = raw.trim();
-  // Spread counts code points, so "ñ" is one character.
-  const length = [...username].length;
-  if (length < USERNAME_MIN_LENGTH || length > USERNAME_MAX_LENGTH) {
-    return { ok: false, reason: "invalid_length" };
-  }
+  const username = normalizeUsername(raw);
+  if (!username) return { ok: false, reason: "invalid_length" };
 
   try {
     await prisma.user.update({
       where: { id: userId },
-      data: { username, usernameKey: username.toLowerCase() },
+      data: { username, usernameKey: usernameKey(username) },
     });
     return { ok: true, username };
   } catch (error) {

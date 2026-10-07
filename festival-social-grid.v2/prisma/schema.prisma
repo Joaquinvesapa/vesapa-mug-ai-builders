@@ -12,7 +12,8 @@ datasource db {
 model User {
   id            String    @id @default(cuid())
   name          String?
-  email         String    @unique
+  /// Set for Google accounts; null for username + PIN accounts.
+  email         String?   @unique
   emailVerified DateTime?
   image         String?
   /// Chosen on first access (RF-11); null until then.
@@ -23,6 +24,11 @@ model User {
   avatarShape   String    @default("circle")
   /// One of AVATAR_COLORS, lowercase (RF-17).
   avatarColor   String    @default("#7c3aed")
+  /// scrypt hash of the 6-digit PIN (RF-08); null for Google accounts.
+  pinHash           String?
+  /// Consecutive failed PIN attempts since the last success or lockout (RNF-10).
+  pinFailedAttempts Int       @default(0)
+  pinLockedUntil    DateTime?
   accounts      Account[]
   sessions      Session[]
   selections    Selection[]

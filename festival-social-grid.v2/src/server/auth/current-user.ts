@@ -4,7 +4,7 @@ import { cache } from "react";
 import { auth } from "@/auth";
 import { prisma } from "@/server/db";
 
-export type CurrentUser = { id: string; email: string; username: string | null };
+export type CurrentUser = { id: string; email: string | null; username: string | null };
 
 /** The signed-in user as stored now, or null. Deduplicated per request. */
 export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {

@@ -9,7 +9,7 @@ import { prisma } from "@/server/db";
 // Both functions take the owner's id from the session, never from the
 // request: nobody can read or change someone else's full profile (RF-70).
 
-export type Profile = { email: string; username: string | null; avatar: Avatar };
+export type Profile = { email: string | null; username: string | null; avatar: Avatar };
 
 export async function getProfile(userId: string): Promise<Profile | null> {
   const user = await prisma.user.findUnique({

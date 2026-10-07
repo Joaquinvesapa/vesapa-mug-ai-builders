@@ -20,12 +20,23 @@ export async function signInWithEmail(page: Page, email: string): Promise<void> 
   await page.getByRole("button", { name: "Entrar", exact: true }).click();
 }
 
-/** Signs in a brand-new person and completes the username step. */
+/** Signs in with username + PIN; the first time, this creates the account. */
+export async function signInWithPin(
+  page: Page,
+  username: string,
+  pin: string,
+): Promise<void> {
+  await page.goto("/login");
+  await page.getByLabel("Nombre de usuario").fill(username);
+  await page.getByRole("button", { name: "Continuar" }).click();
+  await page.getByLabel("PIN").fill(pin);
+  await page.getByRole("button", { name: /^(Entrar|Crear cuenta)$/ }).click();
+}
+
+/** Signs up a brand-new person and lands on the home page. */
 export async function signUp(page: Page): Promise<string> {
   const username = uniqueUsername();
-  await signInWithEmail(page, uniqueEmail());
-  await page.getByLabel("Nombre de usuario").fill(username);
-  await page.getByRole("button", { name: "Guardar" }).click();
+  await signInWithPin(page, username, "482916");
   await expect(page).toHaveURL(/\/$/);
   return username;
 }

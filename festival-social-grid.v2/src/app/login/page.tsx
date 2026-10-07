@@ -3,7 +3,7 @@ import { Button, CardPage } from "@/components/ui";
 import { festival } from "@/config/festival";
 import { getCurrentUser } from "@/server/auth/current-user";
 import { signInWithGoogle } from "./actions";
-import { EmailCodeForm } from "./email-code-form";
+import { PinForm } from "./pin-form";
 
 export default async function LoginPage() {
   if (await getCurrentUser()) redirect("/");
@@ -17,10 +17,10 @@ export default async function LoginPage() {
       </form>
       <div className="my-6 flex items-center gap-3 text-xs text-neutral-400">
         <span className="h-px flex-1 bg-neutral-200" />
-        <p>o con un código por email</p>
+        <p>o con tu usuario y PIN</p>
         <span className="h-px flex-1 bg-neutral-200" />
       </div>
-      <EmailCodeForm />
+      <PinForm />
     </CardPage>
   );
 }

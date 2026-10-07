@@ -19,7 +19,7 @@ export type RequestEmailCodeResult =
   | { ok: true }
   | { ok: false; reason: "invalid_email" | "rate_limited" };
 
-export type VerifiedUser = { id: string; email: string };
+export type VerifiedUser = { id: string; email: string | null };
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 

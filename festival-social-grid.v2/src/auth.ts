@@ -3,6 +3,7 @@ import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import { authAdapter } from "@/server/auth/adapter";
 import { verifyEmailCode } from "@/server/auth/email-code";
+import { signInWithPin } from "@/server/auth/pin";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: authAdapter,
@@ -21,6 +22,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null;
         }
         return verifyEmailCode(email, code, { now: () => new Date() });
+      },
+    }),
+    Credentials({
+      id: "pin",
+      credentials: { username: {}, pin: {} },
+      async authorize({ username, pin }) {
+        if (typeof username !== "string" || typeof pin !== "string") {
+          return null;
+        }
+        const result = await signInWithPin(username, pin, { now: () => new Date() });
+        return result.ok ? { id: result.user.id, name: result.user.username } : null;
       },
     }),
   ],

@@ -17,7 +17,6 @@ test.describe("own profile", () => {
 
   test("shows the full profile (AC-23)", async ({ page }) => {
     await expect(page.getByRole("heading", { name: username })).toBeVisible();
-    await expect(page.getByText(/@example\.com$/)).toBeVisible();
     await expect(page.getByRole("img", { name: "Avatar: Círculo" }).first()).toBeVisible();
   });
 
