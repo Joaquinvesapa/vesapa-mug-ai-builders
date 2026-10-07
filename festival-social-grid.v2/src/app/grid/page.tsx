@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
+import { ExportForm } from "./export-form";
 import { SelectionButton } from "@/components/selection-button";
 import { findOverlaps, groupByDay } from "@/lib/grid";
 import { formatFestivalDay, formatFestivalTime } from "@/lib/festival-time";
@@ -69,6 +70,8 @@ export default async function GridPage() {
               </section>
             );
           })}
+
+          <ExportForm days={groupByDay(shows).map((g) => g.day)} />
         </>
       )}
     </AppShell>
