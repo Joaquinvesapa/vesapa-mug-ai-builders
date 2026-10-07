@@ -49,11 +49,10 @@ export function parseFestivalConfig(config: FestivalConfig): FestivalConfig {
   return config;
 }
 
-// Placeholder values until the real festival is provided.
 export const festival: FestivalConfig = parseFestivalConfig({
-  name: "Festival de ejemplo",
-  city: "Ciudad Autónoma de Buenos Aires",
-  province: "Ciudad Autónoma de Buenos Aires",
-  startDate: "2026-11-20",
-  endDate: "2026-11-22",
+  name: "Lollapalooza Argentina 2027",
+  city: "San Isidro",
+  province: "Buenos Aires",
+  startDate: "2027-03-05",
+  endDate: "2027-03-06",
 });

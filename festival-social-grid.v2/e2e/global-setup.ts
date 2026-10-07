@@ -4,5 +4,5 @@ import { execFileSync } from "node:child_process";
 export default function setup(): void {
   const env = { ...process.env, DATABASE_URL: process.env.TEST_DATABASE_URL };
   execFileSync("pnpm", ["exec", "prisma", "migrate", "deploy"], { env, stdio: "inherit" });
-  execFileSync("pnpm", ["lineup:import", "data/lineup.csv"], { env, stdio: "inherit" });
+  execFileSync("pnpm", ["lineup:import", "data/lineup-lollapalooza-2027.csv"], { env, stdio: "inherit" });
 }

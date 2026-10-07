@@ -28,7 +28,7 @@ describe("pnpm lineup:import", () => {
   });
 
   it("imports the versioned line-up", async () => {
-    const result = await importFile("data/lineup.csv");
+    const result = await importFile("data/lineup-lollapalooza-2027.csv");
 
     expect(result.code).toBe(0);
     expect(result.output).toMatch(/Imported \d+ shows/);
