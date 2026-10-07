@@ -9,9 +9,9 @@ import { resetDatabase } from "@/test/integration/reset-database";
 
 const run = promisify(execFile);
 
-async function importFile(path: string) {
+async function importFile(path: string, ...flags: string[]) {
   try {
-    const { stdout } = await run("pnpm", ["exec", "tsx", "scripts/import-lineup.ts", path], {
+    const { stdout } = await run("pnpm", ["exec", "tsx", "scripts/import-lineup.ts", path, ...flags], {
       env: { ...process.env, DATABASE_URL: process.env.DATABASE_URL },
     });
     return { code: 0, output: stdout };
@@ -56,5 +56,26 @@ describe("pnpm lineup:import", () => {
 
     expect(result.code).toBe(1);
     expect(result.output).toContain("Cannot read nope.csv");
+  });
+
+  it("blocks removing selected shows unless --allow-removals is passed", async () => {
+    await importFile("data/lineup-lollapalooza-2027.csv");
+    const user = await prisma.user.create({ data: { email: "ana@example.com" } });
+    await prisma.selection.create({ data: { userId: user.id, showId: "peggy-gou" } });
+    const dir = await mkdtemp(join(tmpdir(), "lineup-"));
+    const path = join(dir, "smaller.csv");
+    await writeFile(
+      path,
+      "id,artist,description,day,stage,start,end\n" +
+        "tiger-mood,Tiger Mood,Live,2027-03-05,Flow Stage,2027-03-05 14:30,2027-03-05 15:15\n",
+    );
+
+    const blocked = await importFile(path);
+    expect(blocked.code).toBe(1);
+    expect(blocked.output).toContain('show "peggy-gou" would be removed');
+
+    const allowed = await importFile(path, "--allow-removals");
+    expect(allowed.code).toBe(0);
+    expect(await prisma.show.count()).toBe(1);
   });
 });

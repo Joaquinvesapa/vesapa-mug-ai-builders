@@ -72,4 +72,40 @@ describe("importLineupCsv", () => {
     expect(result).toEqual({ ok: true, created: 0, updated: 1, removed: 1 });
     expect(await prisma.show.count()).toBe(1);
   });
+
+  it("refuses to remove shows that someone selected, and changes nothing", async () => {
+    await importLineupCsv(csv(bandA, bandB), festival);
+    const user = await prisma.user.create({ data: { email: "ana@example.com" } });
+    await prisma.selection.create({ data: { userId: user.id, showId: "band-b" } });
+
+    const result = await importLineupCsv(csv(bandA.replace("Norte", "Este")), festival);
+
+    expect(result).toEqual({
+      ok: false,
+      errors: ['show "band-b" would be removed but is in 1 personal grid(s); rerun with --allow-removals'],
+    });
+    expect(await prisma.show.count()).toBe(2);
+    expect((await prisma.show.findUniqueOrThrow({ where: { id: "band-a" } })).stage).toBe("Norte");
+  });
+
+  it("removes selected shows and their selections when allowed", async () => {
+    await importLineupCsv(csv(bandA, bandB), festival);
+    const user = await prisma.user.create({ data: { email: "ana@example.com" } });
+    await prisma.selection.create({ data: { userId: user.id, showId: "band-b" } });
+
+    const result = await importLineupCsv(csv(bandA), festival, { allowRemovals: true });
+
+    expect(result).toEqual({ ok: true, created: 0, updated: 1, removed: 1 });
+    expect(await prisma.selection.count()).toBe(0);
+  });
+
+  it("keeps selections of shows that stay in the CSV", async () => {
+    await importLineupCsv(csv(bandA), festival);
+    const user = await prisma.user.create({ data: { email: "ana@example.com" } });
+    await prisma.selection.create({ data: { userId: user.id, showId: "band-a" } });
+
+    await importLineupCsv(csv(bandA.replace("Norte", "Este"), bandB), festival);
+
+    expect(await prisma.selection.count()).toBe(1);
+  });
 });

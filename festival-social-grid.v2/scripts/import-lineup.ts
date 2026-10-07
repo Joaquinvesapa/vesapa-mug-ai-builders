@@ -1,6 +1,6 @@
 /**
  * Loads the versioned line-up CSV into the database (RF-03).
- * Usage: pnpm lineup:import <file.csv>
+ * Usage: pnpm lineup:import <file.csv> [--allow-removals]
  */
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
@@ -9,9 +9,11 @@ import { readFile } from "node:fs/promises";
 if (existsSync(".env")) process.loadEnvFile(".env");
 
 async function main(): Promise<number> {
-  const path = process.argv[2];
+  const args = process.argv.slice(2);
+  const allowRemovals = args.includes("--allow-removals");
+  const path = args.find((a) => !a.startsWith("--"));
   if (!path) {
-    console.error("Usage: pnpm lineup:import <file.csv>");
+    console.error("Usage: pnpm lineup:import <file.csv> [--allow-removals]");
     return 1;
   }
 
@@ -29,7 +31,7 @@ async function main(): Promise<number> {
   const { prisma } = await import("@/server/db");
 
   try {
-    const result = await importLineupCsv(text, festival);
+    const result = await importLineupCsv(text, festival, { allowRemovals });
     if (!result.ok) {
       console.error(`Line-up rejected; nothing was loaded:\n${result.errors.map((e) => `  - ${e}`).join("\n")}`);
       return 1;
