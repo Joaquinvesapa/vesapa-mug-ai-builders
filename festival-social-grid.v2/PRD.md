@@ -25,7 +25,7 @@ Festival Social Grid es un MVP autenticado para consultar el line-up de un únic
 |---|---|
 | Festival | Un despliegue contiene exactamente un festival ubicado en Argentina. No hay catálogo ni selector. |
 | Aprovisionamiento | Configuración e importador CSV son operaciones técnicas; no existe carga, edición ni publicación desde la interfaz. |
-| Identidad | Todo el contenido requiere autenticación. Google o código de email temporal permiten el acceso. El perfil completo es privado; el descubrimiento expone solo nombre de usuario y avatar. |
+| Identidad | Todo el contenido requiere autenticación. Google o nombre de usuario con PIN de 6 dígitos permiten el acceso; son cuentas separadas (una cuenta de Google no tiene PIN). No se usa email para el acceso. El perfil completo es privado; el descubrimiento expone solo nombre de usuario y avatar. |
 | Avatar | Se elige de un set de formas abstractas y se le puede cambiar el color. No hay subida de archivos. |
 | Selección | Binaria: un usuario selecciona un show o no. |
 | Grupos | Privados, máximo 15 miembros incluido el propietario. Una persona pertenece como máximo a un grupo. El propietario puede renombrarlo y eliminarlo. |
@@ -55,12 +55,12 @@ Festival Social Grid es un MVP autenticado para consultar el line-up de un únic
 
 ### Autenticación y cuenta
 - **RF-05:** El sistema debe permitir iniciar sesión mediante Google.
-- **RF-06:** El sistema debe enviar por email un código de seis dígitos a quien lo solicita.
-- **RF-07:** El sistema debe iniciar sesión cuando se verifica un código vigente.
-- **RF-08:** El sistema debe generar un código distinto en cada solicitud.
-- **RF-09:** El sistema debe crear la cuenta en la primera verificación válida de un email no registrado.
+- **RF-06:** El sistema debe permitir iniciar sesión con nombre de usuario y PIN de exactamente 6 dígitos numéricos.
+- **RF-07:** El sistema debe iniciar sesión cuando el PIN ingresado coincide con el de un nombre de usuario registrado.
+- **RF-08:** El sistema debe almacenar el PIN solo como hash; nunca en texto plano.
+- **RF-09:** El sistema debe crear la cuenta e iniciar sesión cuando se ingresa un nombre de usuario no registrado y se define su PIN.
 - **RF-10:** El sistema debe permitir cerrar sesión.
-- **RF-11:** El sistema debe solicitar un nombre de usuario en el primer acceso.
+- **RF-11:** El sistema debe solicitar un nombre de usuario en el primer acceso con Google.
 - **RF-12:** El sistema debe aceptar solo nombres de usuario de entre 3 y 30 caracteres.
 - **RF-13:** El sistema debe rechazar un nombre de usuario ya existente sin distinguir mayúsculas de minúsculas.
 
@@ -146,11 +146,11 @@ Festival Social Grid es un MVP autenticado para consultar el line-up de un únic
 - **RNF-05 — Privacidad (recursos ajenos):** Las pruebas automatizadas deben registrar 0 exposiciones de recursos privados (grilla, grupo, invitación, exportación, perfil completo) a personas no autorizadas, al intentar leer, modificar o exportar.
 - **RNF-06 — Integridad del aprovisionamiento:** Ante datos inválidos, el importador debe dejar 0 shows cargados de esa ejecución.
 - **RNF-07 — TLS:** Toda comunicación debe usar TLS 1.2 o superior; un handshake con TLS 1.1 o inferior debe ser rechazado.
-- **RNF-08 — Vencimiento del código:** Cada código de email debe vencer a los 10 minutos de emitido.
-- **RNF-09 — Un solo uso:** Cada código debe quedar inválido tras su primer uso exitoso.
-- **RNF-10 — Intentos fallidos:** Cada código debe aceptar como máximo 5 intentos fallidos de verificación.
-- **RNF-11 — Límite de solicitudes:** El sistema debe aceptar como máximo 5 solicitudes de código por email en 15 minutos.
-- **RNF-12 — No enumeración:** Para un email registrado y uno no registrado, la solicitud de código debe devolver el mismo código HTTP y el mismo cuerpo, con una diferencia de tiempo de respuesta inferior a 200 ms (p95).
+- **RNF-08 — Formato del PIN:** El sistema debe rechazar todo PIN que no tenga exactamente 6 dígitos numéricos.
+- **RNF-09 — Almacenamiento del PIN:** La base de datos debe contener 0 PIN en texto plano.
+- **RNF-10 — Bloqueo por intentos fallidos:** Tras 5 intentos fallidos consecutivos para un nombre de usuario, el sistema debe rechazar todo intento de ese usuario, incluso con el PIN correcto, durante 15 minutos.
+- **RNF-11 — Reinicio del contador:** Un inicio de sesión exitoso debe reiniciar a 0 el contador de intentos fallidos.
+- **RNF-12 — Respuesta uniforme de error:** Un PIN incorrecto y un usuario bloqueado deben devolver el mismo código HTTP y el mismo cuerpo.
 
 ## Criterios de Aceptación
 
@@ -162,22 +162,22 @@ Festival Social Grid es un MVP autenticado para consultar el line-up de un únic
 
 ### Autenticación
 - **AC-05 (RF-05):** Dada una persona sin sesión con cuenta de Google válida, cuando autoriza el acceso, entonces inicia sesión.
-- **AC-06 (RF-06):** Dada una solicitud de código, cuando se envía el email, entonces el código tiene exactamente 6 dígitos.
-- **AC-07 (RF-07, RF-09):** Dado un email no registrado, cuando la persona verifica el código vigente, entonces se crea su cuenta y se inicia la sesión.
-- **AC-08 (RF-07):** Dado un email registrado, cuando su titular verifica el código vigente, entonces inicia sesión sin crear una cuenta duplicada.
-- **AC-09 (RF-08):** Dado un email registrado con un código previo, cuando se solicita otro, entonces el código nuevo es distinto al anterior.
+- **AC-06 (RF-06, RNF-08):** Dado el formulario de acceso, cuando se ingresa un PIN de 5 dígitos, de 7 dígitos o con letras, entonces se rechaza; con 6 dígitos numéricos se acepta el formato.
+- **AC-07 (RF-09, RF-12, RF-13):** Dado un nombre de usuario no registrado y válido, cuando la persona define un PIN de 6 dígitos, entonces se crea su cuenta con ese nombre de usuario y se inicia la sesión sin pedir otro nombre.
+- **AC-08 (RF-07):** Dado un nombre de usuario registrado, cuando su titular ingresa el PIN correcto, entonces inicia sesión sin crear una cuenta duplicada; con “aNA” inicia sesión la cuenta “Ana”.
+- **AC-09 (RF-07):** Dado un nombre de usuario registrado, cuando se ingresa un PIN incorrecto, entonces se rechaza y no se inicia sesión.
+- **AC-20 (RF-08, RNF-09):** Dada una cuenta con PIN, cuando se inspecciona la base de datos, entonces el PIN no aparece en texto plano.
+- **AC-21 (RF-05, RF-06):** Dada una cuenta creada con Google, cuando se intenta acceder con su nombre de usuario y cualquier PIN, entonces se rechaza.
 - **AC-10 (RF-10):** Dada una persona con sesión, cuando cierra sesión, entonces una solicitud posterior de contenido autenticado es denegada.
 - **AC-11 (RF-11):** Dada una persona en su primer acceso sin nombre de usuario, cuando intenta entrar a la aplicación, entonces se le solicita un nombre de usuario y no accede hasta fijarlo.
 - **AC-12 (RF-12):** Dado un nombre de usuario de 3 caracteres, cuando se guarda, entonces se acepta; ídem con 30 caracteres.
 - **AC-13 (RF-12):** Dado un nombre de usuario de 2 caracteres, cuando se guarda, entonces se rechaza; ídem con 31 caracteres.
 - **AC-14 (RF-13):** Dado un nombre de usuario existente “Ana”, cuando otra persona guarda “aNA”, entonces se rechaza.
-- **AC-15 (RNF-08):** Dado un código emitido, cuando se verifica a los 9 min 59 s, entonces se acepta.
-- **AC-16 (RNF-08):** Dado un código emitido, cuando se verifica a los 10 min 00 s, entonces se rechaza.
-- **AC-17 (RNF-09):** Dado un código ya usado con éxito, cuando se reutiliza, entonces se rechaza.
-- **AC-18 (RNF-10):** Dado un código con 4 intentos fallidos, cuando se ingresa el código correcto, entonces se acepta.
-- **AC-19 (RNF-10):** Dado un código con 5 intentos fallidos, cuando se ingresa el código correcto, entonces se rechaza.
-- **AC-20 (RNF-11):** Dadas 5 solicitudes para un email en 15 min, cuando se hace una sexta, entonces se rechaza.
-- **AC-21 (RNF-12):** Dados un email registrado y uno no registrado, cuando se solicita un código para cada uno, entonces ambas respuestas tienen el mismo código HTTP y el mismo cuerpo, y la diferencia de tiempo p95 es inferior a 200 ms.
+- **AC-15 (RNF-10):** Dado un usuario con 4 intentos fallidos consecutivos, cuando ingresa el PIN correcto, entonces inicia sesión.
+- **AC-16 (RNF-10):** Dado un usuario con 5 intentos fallidos consecutivos, cuando ingresa el PIN correcto antes de 15 min 00 s del quinto fallo, entonces se rechaza.
+- **AC-17 (RNF-10):** Dado un usuario bloqueado, cuando ingresa el PIN correcto a los 15 min 00 s del quinto fallo, entonces inicia sesión.
+- **AC-18 (RNF-11):** Dado un usuario con 4 intentos fallidos, cuando inicia sesión con éxito y luego falla 4 veces más, entonces el siguiente intento con PIN correcto se acepta.
+- **AC-19 (RNF-12):** Dados un PIN incorrecto y un usuario bloqueado, cuando se intenta acceder, entonces ambas respuestas tienen el mismo código HTTP y el mismo cuerpo.
 - **AC-22 (RNF-07):** Dado el endpoint público, cuando un cliente intenta un handshake TLS 1.1, entonces se rechaza; con TLS 1.2 se acepta.
 
 ### Perfil y descubrimiento
@@ -292,6 +292,7 @@ Festival Social Grid es un MVP autenticado para consultar el line-up de un únic
 - Votaciones grupales, grilla grupal editable o resolución automática de superposiciones.
 - Estados de preferencia como “quizá”, prioridades o rankings de artistas.
 - Perfiles o enlaces expuestos sin autenticación, acceso anónimo a recursos privados o notificaciones fuera de una grilla abierta.
+- Acceso o registro por email, recuperación o restablecimiento de PIN olvidado y vinculación de una cuenta de Google con un PIN.
 - Invitaciones por email, invitaciones a personas no registradas y notificaciones de invitación fuera de la app.
 - Pertenecer a más de un grupo simultáneamente.
 - Subida de imágenes o fotos como avatar.
@@ -312,6 +313,9 @@ Festival Social Grid es un MVP autenticado para consultar el line-up de un únic
 | Riesgo | La enumeración de usuarios por búsqueda de nombre de usuario sigue siendo posible. | Aceptado: la búsqueda es parte del producto y solo expone nombre de usuario y avatar (RF-19). |
 | Dependencia | Desarrollo debe mantener la configuración de metadatos del festival único. | Disponible antes del despliegue. |
 | Dependencia | Desarrollo debe disponer de un CSV versionado y un importador. | Se ejecuta como parte del aprovisionamiento, fuera de la interfaz. |
-| Dependencia | Se requieren Google OAuth y un proveedor de email transaccional. | Acceso por Google o código de seis dígitos, asociado a un nombre de usuario único. |
+| Riesgo | Un PIN de 6 dígitos admite solo 10⁶ combinaciones y es vulnerable a fuerza bruta. | Bloqueo de 15 min tras 5 fallos por usuario (RNF-10) y PIN guardado como hash (RNF-09). |
+| Riesgo | El flujo de acceso revela si un nombre de usuario existe (pide PIN o lo crea). | Aceptado: los nombres de usuario ya son descubribles por búsqueda (RF-18, RF-19). |
+| Riesgo | Quien olvida su PIN pierde el acceso a su cuenta. | Aceptado para el MVP: la recuperación está fuera de alcance. |
+| Dependencia | Se requiere Google OAuth. | Acceso por Google o por nombre de usuario único con PIN de seis dígitos. |
 | Dependencia | El servidor debe entregar un instante UTC confiable. | La interfaz lo recibe y evalúa estados con `America/Argentina/Buenos_Aires`. |
 | Dependencia | El motor de imágenes debe renderizar PNG consistentes. | Debe soportar exactamente 1080 × 1920 y 1080 × 1350 dentro de RNF-03. |
