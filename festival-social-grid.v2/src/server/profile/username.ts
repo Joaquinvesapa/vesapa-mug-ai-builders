@@ -4,6 +4,11 @@ import { prisma } from "@/server/db";
 export const USERNAME_MIN_LENGTH = 3; // RF-12
 export const USERNAME_MAX_LENGTH = 30; // RF-12
 
+export const USERNAME_ERRORS = {
+  invalid_length: "El nombre de usuario debe tener entre 3 y 30 caracteres.",
+  taken: "Ese nombre de usuario ya está en uso.",
+} as const;
+
 export type SetUsernameResult =
   | { ok: true; username: string }
   | { ok: false; reason: "invalid_length" | "taken" };

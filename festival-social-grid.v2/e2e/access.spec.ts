@@ -57,6 +57,7 @@ test("denies authenticated content after signing out (AC-10)", async ({ page }) 
   await page.getByRole("button", { name: "Guardar" }).click();
   await expect(page).toHaveURL(/\/$/);
 
+  await page.goto("/profile");
   await page.getByRole("button", { name: "Cerrar sesión" }).click();
   await expect(page).toHaveURL(/\/login$/);
 
