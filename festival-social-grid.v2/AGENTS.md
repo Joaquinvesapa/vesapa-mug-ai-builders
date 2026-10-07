@@ -29,7 +29,7 @@
 ## Seguridad y datos
 
 - Protegé del lado del servidor todo contenido y recurso: line-up, perfiles completos, selecciones, grupos, invitaciones y PNG. Las búsquedas para invitar solo deben exponer nombre de usuario y avatar.
-- Respetá los límites de códigos de email, intentos y solicitudes, la no enumeración de cuentas y TLS conforme al PRD. Nunca registres secretos o códigos en archivos versionados.
+- Respetá el formato y el almacenamiento con hash del PIN, el bloqueo por intentos fallidos, la respuesta uniforme de error y TLS conforme al PRD. Nunca registres secretos ni PIN en archivos versionados.
 - El importador CSV debe validar antes de cargar y evitar estados parcialmente aprovisionados. Conservá identificadores estables y evaluá el impacto en selecciones existentes al cambiar el line-up.
 - No agregues servicios, cuentas ni infraestructura real para pruebas sin acordar previamente su alcance y manejo de credenciales.
 - **Nunca ejecutes comandos que requieran root o permisos de administrador** (`sudo`, cambios de grupos, servicios del sistema, etc.). Informá qué comando hace falta y para qué; siempre lo ejecuta el propietario.

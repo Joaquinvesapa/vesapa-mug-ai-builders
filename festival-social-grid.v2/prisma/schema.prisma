@@ -72,20 +72,6 @@ model VerificationToken {
   @@id([identifier, token])
 }
 
-/// Six-digit sign-in code sent by email (RF-06, RNF-08..RNF-11).
-model EmailCode {
-  id             String    @id @default(cuid())
-  email          String
-  /// Only a hash is stored, never the code itself.
-  codeHash       String
-  expiresAt      DateTime
-  failedAttempts Int       @default(0)
-  usedAt         DateTime?
-  createdAt      DateTime  @default(now())
-
-  @@index([email, createdAt])
-}
-
 /// A show of the line-up, loaded only by the CSV importer (RF-03).
 model Show {
   /// Stable slug from the CSV; kept across reimports.

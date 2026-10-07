@@ -35,17 +35,6 @@ describe("auth persistence", () => {
     expect(await prisma.user.count()).toBe(2);
   });
 
-  it("stores an email code with its expiry and attempt counter", async () => {
-    const expiresAt = new Date("2026-11-20T03:10:00Z");
-    const code = await prisma.emailCode.create({
-      data: { email: "a@example.com", codeHash: "hash", expiresAt },
-    });
-
-    expect(code.failedAttempts).toBe(0);
-    expect(code.usedAt).toBeNull();
-    expect(code.expiresAt).toEqual(expiresAt);
-  });
-
   it("links a Google account to its user", async () => {
     const user = await prisma.user.create({
       data: {

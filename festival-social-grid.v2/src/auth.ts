@@ -2,27 +2,16 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import { authAdapter } from "@/server/auth/adapter";
-import { verifyEmailCode } from "@/server/auth/email-code";
 import { signInWithPin } from "@/server/auth/pin";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: authAdapter,
-  // JWT is required by the Credentials provider used for email codes.
+  // JWT is required by the Credentials provider used for username + PIN.
   session: { strategy: "jwt" },
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    }),
-    Credentials({
-      id: "email-code",
-      credentials: { email: {}, code: {} },
-      authorize({ email, code }) {
-        if (typeof email !== "string" || typeof code !== "string") {
-          return null;
-        }
-        return verifyEmailCode(email, code, { now: () => new Date() });
-      },
     }),
     Credentials({
       id: "pin",
